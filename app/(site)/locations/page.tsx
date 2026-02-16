@@ -1,7 +1,11 @@
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { STORES_QUERY } from "@/sanity/lib/queries";
+import { StoreLocator } from "@/components/map/store-locator";
 import { StoreCard } from "@/components/ui/store-card";
 import type { Metadata } from "next";
+
+// TODO: Replace with generated types once @grind runs sanity typegen generate
+type StoresQueryResult = any[];
 
 export const metadata: Metadata = {
   title: "Our Locations",
@@ -10,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LocationsPage() {
-  const stores = await sanityFetch<any[]>({
+  const stores = await sanityFetch<StoresQueryResult>({
     query: STORES_QUERY,
     tags: ["store"],
   });
@@ -40,50 +44,35 @@ export default async function LocationsPage() {
     );
   }
 
-  // Group stores by city
-  const storesByCity = stores.reduce<Record<string, typeof stores>>(
-    (acc, store) => {
-      const city = store.city || "Other";
-      if (!acc[city]) acc[city] = [];
-      acc[city].push(store);
-      return acc;
-    },
-    {}
-  );
-
   return (
     <main>
-      {/* Page header */}
-      <section className="bg-crema-100 pt-(--space-16) pb-(--space-8)">
+      {/* Page header — compact, map is the hero */}
+      <section className="bg-crema-100 pt-(--space-12) pb-(--space-6)">
         <div className="container-site">
           <h1 className="font-display text-4xl lg:text-5xl text-espresso-600">
-            Our Locations
+            Find Your Coffee
           </h1>
           <p className="mt-(--space-2) text-lg text-stone">
-            Find your nearest No Time Coffee.
+            Three cities, one mission.
           </p>
         </div>
       </section>
 
-      {/* Store cards grouped by city */}
-      <section className="py-(--space-8)">
-        <div className="container-site">
-          <div className="space-y-(--space-12)">
-            {Object.entries(storesByCity).map(([city, cityStores]) => (
-              <div key={city}>
-                <h2 className="font-display text-2xl lg:text-3xl text-espresso-600 mb-(--space-6) border-b border-mist pb-(--space-2)">
-                  {city}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-(--space-6)">
-                  {cityStores.map((store: any) => (
-                    <StoreCard key={store._id} store={store} variant="full" />
-                  ))}
-                </div>
-              </div>
-            ))}
+      {/* Store locator — split view with map + cards */}
+      <StoreLocator stores={stores} />
+
+      {/* No-JS fallback — cards render without map or interactivity */}
+      <noscript>
+        <section className="py-(--space-8)">
+          <div className="container-site">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-(--space-6)">
+              {stores.map((store: any) => (
+                <StoreCard key={store._id} store={store} variant="full" />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </noscript>
     </main>
   );
 }

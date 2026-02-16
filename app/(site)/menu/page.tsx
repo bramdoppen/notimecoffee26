@@ -1,10 +1,7 @@
 import { Suspense } from "react";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { PRODUCTS_QUERY, PRODUCT_CATEGORIES_QUERY } from "@/sanity/lib/queries";
-// TODO: Replace with generated types once @grind runs `sanity typegen generate`
-// import type { ProductsQueryResult, ProductCategoriesQueryResult } from "@/sanity/types";
-type ProductsQueryResult = any[];
-type ProductCategoriesQueryResult = any[];
+import type { PRODUCTS_QUERYResult, PRODUCT_CATEGORIES_QUERYResult } from "@/sanity/types";
 import { ProductCard } from "@/components/ui/product-card";
 import { MenuFilterBar } from "@/components/sections/menu-filter-bar";
 import type { Metadata } from "next";
@@ -22,7 +19,7 @@ type MenuPageProps = {
 };
 
 // Extract unique dietary flags from all items
-function extractDietaryFlags(items: ProductsQueryResult): string[] {
+function extractDietaryFlags(items: PRODUCTS_QUERYResult): string[] {
   const flags = new Set<string>();
   for (const item of items) {
     if (item.dietaryFlags) {
@@ -36,12 +33,12 @@ function extractDietaryFlags(items: ProductsQueryResult): string[] {
 
 // Group items by category, respecting category sort order
 function groupByCategory(
-  items: ProductsQueryResult,
-  categories: ProductCategoriesQueryResult
+  items: PRODUCTS_QUERYResult,
+  categories: PRODUCT_CATEGORIES_QUERYResult
 ) {
   const groups: Array<{
-    category: ProductCategoriesQueryResult[number];
-    items: ProductsQueryResult;
+    category: PRODUCT_CATEGORIES_QUERYResult[number];
+    items: PRODUCTS_QUERYResult;
   }> = [];
 
   for (const cat of categories) {
@@ -75,11 +72,11 @@ export default async function MenuPage({ searchParams }: MenuPageProps) {
       : [];
 
   const [allItems, categories] = await Promise.all([
-    sanityFetch<ProductsQueryResult>({
+    sanityFetch<PRODUCTS_QUERYResult>({
       query: PRODUCTS_QUERY,
       tags: ["product"],
     }),
-    sanityFetch<ProductCategoriesQueryResult>({
+    sanityFetch<PRODUCT_CATEGORIES_QUERYResult>({
       query: PRODUCT_CATEGORIES_QUERY,
       tags: ["productCategory"],
     }),
