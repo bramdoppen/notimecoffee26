@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import { ScoreBadge } from '@/components/scoring/ScoreBadge';
 import { Badge } from '@/components/ui/Badge';
-import { TIER_UI, RISK_UI, BUDGET_UI, getEnergyLabelColor } from '@/lib/tier-config';
+import {
+  TIER_UI,
+  RISK_UI,
+  BUDGET_UI,
+  CONDITION_UI,
+  getEnergyLabelColor,
+} from '@/lib/tier-config';
 import {
   formatPrice,
   formatPriceRange,
@@ -46,6 +52,7 @@ export function PropertyCard({ property: p }: PropertyCardProps) {
   const budget = BUDGET_UI[p.budgetStatus];
   const energyColor = p.energyLabel ? getEnergyLabelColor(p.energyLabel) : null;
   const hasDealbreakers = p.dealbreakers.length > 0;
+  const condition = p.renovationCondition ? CONDITION_UI[p.renovationCondition] : null;
 
   return (
     <Link
@@ -62,8 +69,9 @@ export function PropertyCard({ property: p }: PropertyCardProps) {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-4xl text-gray-300">
-            🏠
+          <div className="flex h-full flex-col items-center justify-center gap-1 text-gray-300">
+            <span className="text-4xl">🏠</span>
+            <span className="text-xs">Geen foto beschikbaar</span>
           </div>
         )}
 
@@ -84,7 +92,7 @@ export function PropertyCard({ property: p }: PropertyCardProps) {
 
       {/* Content */}
       <div className="px-5 pb-5 pt-4">
-        {/* Score badge — overlaps photo */}
+        {/* Score badge — overlaps photo, vertical layout (label below) */}
         <div className="-mt-10 mb-3">
           {hasDealbreakers ? (
             <DealbreakBadge />
@@ -94,7 +102,7 @@ export function PropertyCard({ property: p }: PropertyCardProps) {
               tier={p.matchTier}
               size="md"
               showLabel
-              layout="horizontal"
+              layout="vertical"
             />
           )}
         </div>
@@ -129,7 +137,15 @@ export function PropertyCard({ property: p }: PropertyCardProps) {
         <div className="mb-3 border-t border-gray-100" />
 
         {/* Risk pills (max 2) */}
-        <div className="mb-2.5 flex flex-wrap gap-1.5">
+        <div
+          className="mb-2.5 flex flex-wrap gap-1.5"
+          role="status"
+          aria-label={
+            p.topRiskFlags.length > 0
+              ? `Risico's: ${p.topRiskFlags.map((r) => `${r.severity} - ${r.label}`).join(', ')}`
+              : 'Laag risico'
+          }
+        >
           {p.topRiskFlags.length > 0 ? (
             p.topRiskFlags.slice(0, 2).map((risk) => {
               const riskConfig = RISK_UI[risk.severity];
@@ -154,11 +170,15 @@ export function PropertyCard({ property: p }: PropertyCardProps) {
 
         {/* Renovation estimate */}
         {p.renovationEstimateHigh > 0 && (
-          <div className="mb-2 text-xs text-gray-500">
-            🔧 {formatPriceRange(p.renovationEstimateLow, p.renovationEstimateHigh)}{' '}
-            renovatie
-            {p.renovationCondition && (
-              <span className="text-gray-400"> ({p.renovationCondition})</span>
+          <div className="mb-2 flex items-center gap-1.5 text-xs text-gray-500">
+            <span>
+              🔧 {formatPriceRange(p.renovationEstimateLow, p.renovationEstimateHigh)}{' '}
+              renovatie
+            </span>
+            {condition && (
+              <Badge text={condition.text} bg={condition.bg} size="sm">
+                {condition.label}
+              </Badge>
             )}
           </div>
         )}
@@ -170,13 +190,13 @@ export function PropertyCard({ property: p }: PropertyCardProps) {
           </div>
         )}
 
-        {/* Total investment + budget status */}
+        {/* Total investment range + budget status */}
         <div className="mt-2.5 border-t border-gray-100 pt-2.5">
           <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-gray-400">
             Totale investering
           </div>
           <div className="mb-1.5 text-sm font-semibold text-gray-900">
-            {formatPrice(p.totalInvestmentMid)}
+            {formatPriceRange(p.totalInvestmentLow, p.totalInvestmentHigh)}
           </div>
           <Badge text={budget.text} bg={budget.bg} size="sm">
             {budget.icon} {budget.label} ({formatPercentage(p.budgetUtilization)})
@@ -184,7 +204,7 @@ export function PropertyCard({ property: p }: PropertyCardProps) {
         </div>
 
         {/* CTA */}
-        <div className="mt-3 text-center text-xs font-medium text-blue-600 group-hover:text-blue-700">
+        <div className="mt-3 text-center text-xs font-medium text-emerald-600 group-hover:text-emerald-700">
           Bekijk volledige analyse →
         </div>
       </div>
@@ -195,13 +215,11 @@ export function PropertyCard({ property: p }: PropertyCardProps) {
 /** Special badge for properties with hard criteria violations */
 function DealbreakBadge() {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex flex-col items-center gap-1">
       <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-red-400 bg-gray-500 text-sm text-white shadow-md">
         ⛔
       </div>
-      <div>
-        <div className="text-sm font-semibold text-red-600">Dealbreaker</div>
-      </div>
+      <div className="text-sm font-semibold text-red-600">Dealbreaker</div>
     </div>
   );
 }

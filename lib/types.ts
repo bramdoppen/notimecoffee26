@@ -15,6 +15,7 @@ import type {
   Condition,
   RenovationCategory,
 } from '@/lib/scoring-labels';
+import type { Confidence } from '@/lib/tier-config';
 
 // ---------------------------------------------------------------------------
 // Property Card (dashboard grid)
@@ -39,13 +40,15 @@ export interface PropertySummary {
   matchScore: number;
   matchTier: Tier;
   recommendation: Recommendation;
+  totalInvestmentLow: number;
   totalInvestmentMid: number;
+  totalInvestmentHigh: number;
   budgetStatus: BudgetStatus;
   budgetUtilization: number;
   overallRisk: RiskLevel;
   dealbreakers: string[];
   topRiskFlags: RiskFlag[];
-  renovationCondition: string | null;
+  renovationCondition: Condition | null;
   renovationEstimateLow: number;
   renovationEstimateHigh: number;
   negotiationSignalCount: number;
@@ -86,6 +89,7 @@ export interface RenovationItem {
   costMid: number;
   costHigh: number;
   reasoning: string;
+  confidence: Confidence;
 }
 
 export interface RiskResult {
@@ -93,6 +97,7 @@ export interface RiskResult {
   level: RiskLevel;
   description: string;
   mitigation: string | null;
+  confidence: Confidence;
 }
 
 export interface NegotiationSignal {
@@ -123,6 +128,7 @@ export interface PropertyAnalysis {
   totalRenovationCostLow: number;
   totalRenovationCostMid: number;
   totalRenovationCostHigh: number;
+  renovationConfidence: Confidence;
   renovationBreakdown: RenovationItem[];
   totalInvestment: number;
   kostenKoper: number;
