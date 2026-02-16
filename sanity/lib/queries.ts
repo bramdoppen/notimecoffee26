@@ -18,4 +18,6 @@ export const POSTS_QUERY = `*[_type == "blogPost"] | order(publishedAt desc)`;
 
 export const POST_BY_SLUG_QUERY = `*[_type == "blogPost" && slug.current == $slug][0]`;
 
+export const FEATURED_PRODUCTS_QUERY = `*[_type == "product" && featured == true && available == true] | order(sortOrder asc) [0...$limit]`;
+
 export const PAGE_BY_SLUG_QUERY = `*[_type == "page" && slug.current == $slug][0]`;
