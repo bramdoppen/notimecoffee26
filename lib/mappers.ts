@@ -165,7 +165,7 @@ function mapPropertyToSummary(
     daysOnMarket: prop.daysOnMarket ?? null,
     matchScore: analysis?.matchScore ?? 0,
     matchTier: (analysis?.tier as PropertySummary['matchTier']) ?? 'not_recommended',
-    recommendation: (analysis?.recommendation as PropertySummary['recommendation']) ?? 'not_recommended',
+    recommendation: (analysis?.recommendation as PropertySummary['recommendation']) ?? 'skip',
     totalInvestmentLow: totalLow,
     totalInvestmentMid: totalMid,
     totalInvestmentHigh: totalHigh,

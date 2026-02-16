@@ -1,7 +1,22 @@
 import { sanityFetch } from '@/sanity/lib/fetch';
-import { PROPERTY_BY_SLUG_QUERY } from '@/sanity/lib/queries';
-import type { Metadata } from 'next';
+import {
+  PROPERTY_WITH_ANALYSIS_QUERY,
+  SITE_SETTINGS_QUERY,
+} from '@/sanity/lib/queries';
 import { notFound } from 'next/navigation';
+import { PropertyHero } from '@/components/property/PropertyHero';
+import { Section } from '@/components/ui/Section';
+import { Badge } from '@/components/ui/Badge';
+import { HardCriteriaChecklist } from '@/components/scoring/HardCriteriaChecklist';
+import { SoftCriteriaChart } from '@/components/scoring/SoftCriteriaChart';
+import { CostBreakdown } from '@/components/renovation/CostBreakdown';
+import { FinancialWaterfall } from '@/components/financial/FinancialWaterfall';
+import { RiskOverview } from '@/components/risk/RiskOverview';
+import { RecommendationSection } from '@/components/strategic/RecommendationSection';
+import { CONDITION_UI, type Confidence } from '@/lib/tier-config';
+import { formatCriteriaCount } from '@/lib/format';
+import type { Metadata } from 'next';
+import type { RiskLevel, BudgetStatus, Condition } from '@/lib/scoring-labels';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -10,270 +25,283 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const property = await sanityFetch<any>({
-    query: PROPERTY_BY_SLUG_QUERY,
+    query: PROPERTY_WITH_ANALYSIS_QUERY,
     params: { slug },
-    tags: ['property'],
+    tags: ['property', 'propertyAnalysis'],
   });
 
   if (!property) return { title: 'Woning niet gevonden' };
 
+  const score = property.analysis?.matchScore;
+  const scoreText = score != null ? ` — Score: ${score}/100` : '';
+
   return {
-    title: `${property.address}, ${property.city} — €${property.askingPrice?.toLocaleString('nl-NL')}`,
-    description: `${property.propertyType} in ${property.city}. ${property.livingArea}m², ${property.rooms} kamers. Vraagprijs €${property.askingPrice?.toLocaleString('nl-NL')}.`,
+    title: `${property.address}, ${property.city}${scoreText}`,
+    description: `AI-analyse van ${property.address} in ${property.city}. ${property.livingArea}m², ${property.rooms} kamers. Vraagprijs €${property.askingPrice?.toLocaleString('nl-NL')}.`,
   };
 }
 
-export default async function PropertyPage({ params }: Props) {
+/**
+ * Property detail page — the heart of the app.
+ *
+ * Fetches property + latest analysis in one GROQ query (no waterfall).
+ * Renders 6 analysis sections wrapped in collapsible Section components.
+ * Graceful degradation: if no analysis exists, shows property info only.
+ *
+ * Server component — Section collapse is the only client interaction.
+ */
+export default async function PropertyDetailPage({ params }: Props) {
   const { slug } = await params;
+
   const property = await sanityFetch<any>({
-    query: PROPERTY_BY_SLUG_QUERY,
+    query: PROPERTY_WITH_ANALYSIS_QUERY,
     params: { slug },
-    tags: ['property'],
+    tags: ['property', 'propertyAnalysis'],
   });
 
   if (!property) notFound();
 
+  const analysis = property.analysis;
+
+  // Derive budget status
+  const budgetStatus: BudgetStatus = !analysis
+    ? 'safe'
+    : !analysis.withinBudget
+      ? 'over_budget'
+      : analysis.budgetRemaining != null &&
+          analysis.totalInvestment > 0 &&
+          analysis.budgetRemaining / analysis.totalInvestment < 0.05
+        ? 'stretch'
+        : 'safe';
+
+  // Derive budget utilization
+  const budgetUtilization =
+    analysis && analysis.totalInvestment > 0
+      ? Math.round(
+          (analysis.totalInvestment /
+            (analysis.totalInvestment + (analysis.budgetRemaining ?? 0))) *
+            100,
+        )
+      : 0;
+
+  // Derive investment range
+  const renoLow = analysis?.totalRenovationCostLow ?? 0;
+  const renoMid = analysis?.totalRenovationCostMid ?? 0;
+  const renoHigh = analysis?.totalRenovationCostHigh ?? 0;
+  const totalMid = analysis?.totalInvestment ?? property.askingPrice;
+  const totalLow = totalMid - (renoMid - renoLow);
+  const totalHigh = totalMid + (renoHigh - renoMid);
+
+  // Derive worst risk confidence for the risk section
+  const worstRiskConfidence: Confidence =
+    analysis?.risks?.some((r: any) => r.confidence === 'low')
+      ? 'low'
+      : analysis?.risks?.some((r: any) => r.confidence === 'medium')
+        ? 'medium'
+        : 'high';
+
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-1">
-          {property.starred && <span className="text-2xl">⭐</span>}
-          <h1 className="text-3xl font-bold">{property.address}</h1>
+      {/* Hero */}
+      <PropertyHero
+        address={property.address}
+        city={property.city}
+        zipCode={property.zipCode ?? ''}
+        neighborhood={property.neighborhood?.name ?? null}
+        askingPrice={property.askingPrice}
+        livingArea={property.livingArea}
+        rooms={property.rooms}
+        bedrooms={property.bedrooms ?? 0}
+        bathrooms={property.bathrooms ?? 0}
+        energyLabel={property.energyLabel ?? null}
+        imageUrl={property.mainImage?.asset?.url ?? null}
+        fundaUrl={property.fundaUrl ?? null}
+        starred={property.starred ?? false}
+        matchScore={analysis?.matchScore ?? 0}
+        matchTier={analysis?.tier ?? 'not_recommended'}
+        recommendation={analysis?.recommendation ?? 'skip'}
+        totalInvestmentLow={totalLow}
+        totalInvestmentHigh={totalHigh}
+        budgetStatus={budgetStatus}
+        budgetUtilization={budgetUtilization}
+      />
+
+      {/* Analysis sections */}
+      {analysis ? (
+        <div className="mt-8 space-y-5">
+          {/* Section 1: Hard Criteria */}
+          <Section
+            title="Harde Criteria"
+            icon="📋"
+            defaultOpen
+            badge={
+              analysis.hardCriteriaPass ? (
+                <Badge text="text-emerald-700" bg="bg-emerald-50" size="sm">
+                  ✅ {formatCriteriaCount(
+                    analysis.hardCriteriaResults?.length ?? 0,
+                    analysis.hardCriteriaResults?.length ?? 0,
+                  )}
+                </Badge>
+              ) : (
+                <Badge text="text-red-700" bg="bg-red-50" size="sm">
+                  ❌ Niet voldaan
+                </Badge>
+              )
+            }
+          >
+            <HardCriteriaChecklist
+              results={analysis.hardCriteriaResults ?? []}
+              allPass={analysis.hardCriteriaPass ?? false}
+            />
+          </Section>
+
+          {/* Section 2: Soft Criteria */}
+          <Section
+            title="Zachte Criteria"
+            icon="📊"
+            badge={
+              <Badge text="text-gray-600" bg="bg-gray-100" size="sm">
+                {analysis.softCriteriaScore ?? 0}/100
+              </Badge>
+            }
+          >
+            <SoftCriteriaChart
+              results={analysis.softCriteriaResults ?? []}
+              overallScore={analysis.softCriteriaScore ?? 0}
+            />
+          </Section>
+
+          {/* Section 3: Renovation */}
+          <Section
+            title="Renovatie Inschatting"
+            icon="🔧"
+            confidence={analysis.renovationConfidence ?? 'high'}
+            badge={
+              analysis.overallCondition ? (
+                <Badge
+                  text={CONDITION_UI[analysis.overallCondition as Condition]?.text ?? 'text-gray-600'}
+                  bg={CONDITION_UI[analysis.overallCondition as Condition]?.bg ?? 'bg-gray-100'}
+                  size="sm"
+                >
+                  {CONDITION_UI[analysis.overallCondition as Condition]?.label ?? analysis.overallCondition}
+                </Badge>
+              ) : undefined
+            }
+          >
+            <CostBreakdown
+              items={analysis.renovationBreakdown ?? []}
+              totalLow={renoLow}
+              totalMid={renoMid}
+              totalHigh={renoHigh}
+            />
+          </Section>
+
+          {/* Section 4: Financial */}
+          <Section title="Financieel Overzicht" icon="💰">
+            <FinancialWaterfall
+              askingPrice={property.askingPrice}
+              kostenKoper={analysis.kostenKoper ?? 0}
+              renovationLow={renoLow}
+              renovationMid={renoMid}
+              renovationHigh={renoHigh}
+              totalInvestment={analysis.totalInvestment ?? property.askingPrice}
+              budgetStatus={budgetStatus}
+              budgetUtilization={budgetUtilization}
+              budgetRemaining={analysis.budgetRemaining ?? 0}
+              monthlyMortgage={analysis.monthlyMortgage ?? null}
+              monthlyTotal={analysis.monthlyTotal ?? null}
+              erfpachtNpv={analysis.erfpachtNpv ?? null}
+            />
+          </Section>
+
+          {/* Section 5: Risk Assessment */}
+          <Section
+            title="Risico Beoordeling"
+            icon="⚠️"
+            confidence={worstRiskConfidence}
+          >
+            <RiskOverview
+              overallRisk={(analysis.overallRiskLevel as RiskLevel) ?? 'low'}
+              risks={analysis.risks ?? []}
+              dealbreakers={analysis.dealbreakers ?? []}
+            />
+          </Section>
+
+          {/* Section 6: Recommendation */}
+          <Section title="Aanbeveling" icon="💡" defaultOpen>
+            <RecommendationSection
+              tier={analysis.tier ?? 'not_recommended'}
+              recommendation={analysis.recommendation ?? 'skip'}
+              summary={analysis.summary ?? null}
+              suggestedQuestions={analysis.suggestedQuestions ?? []}
+              inspectionFocus={analysis.inspectionFocus ?? []}
+              negotiationSignals={analysis.negotiationSignals ?? []}
+            />
+          </Section>
         </div>
-        <p className="text-gray-600">
-          {property.zipCode} {property.city}
-          {property.neighborhood && ` · ${property.neighborhood.name}`}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main content */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Photo */}
-          {property.mainImage?.asset?.url && (
-            <div className="aspect-[16/9] rounded-lg overflow-hidden bg-gray-100">
-              <img
-                src={property.mainImage.asset.url}
-                alt={property.mainImage.alt || property.address}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-
-          {/* Description */}
-          {property.description && (
-            <section>
-              <h2 className="text-xl font-semibold mb-3">Beschrijving</h2>
-              <p className="text-gray-700 whitespace-pre-line">
-                {property.description}
-              </p>
-            </section>
-          )}
-
-          {/* Features */}
-          {property.features && property.features.length > 0 && (
-            <section>
-              <h2 className="text-xl font-semibold mb-3">Kenmerken</h2>
-              <div className="flex flex-wrap gap-2">
-                {property.features.map((feature: string) => (
-                  <span
-                    key={feature}
-                    className="px-3 py-1 bg-gray-100 rounded-full text-sm"
-                  >
-                    {feature}
-                  </span>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Photo gallery */}
-          {property.photos && property.photos.length > 0 && (
-            <section>
-              <h2 className="text-xl font-semibold mb-3">Foto&apos;s</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {property.photos.map((photo: any, i: number) => (
-                  <div
-                    key={photo.asset?._id || i}
-                    className="aspect-[4/3] rounded overflow-hidden bg-gray-100"
-                  >
-                    <img
-                      src={photo.asset?.url}
-                      alt={photo.alt || `Foto ${i + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+      ) : (
+        /* No analysis yet */
+        <div className="mt-8 rounded-xl border border-dashed border-gray-300 px-8 py-12 text-center">
+          <div className="mb-3 text-4xl">🎯</div>
+          <h3 className="mb-2 text-lg font-semibold text-gray-900">
+            Nog geen AI-analyse beschikbaar
+          </h3>
+          <p className="max-w-md mx-auto text-sm text-gray-500">
+            Deze woning is nog niet geanalyseerd. De analyse wordt automatisch
+            uitgevoerd zodra het scoringsmodel actief is.
+          </p>
         </div>
+      )}
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Price card */}
-          <div className="rounded-lg border border-gray-200 p-6">
-            <div className="text-3xl font-bold mb-1">
-              €{property.askingPrice?.toLocaleString('nl-NL')}
+      {/* Property details sidebar — below analysis on mobile, could be sidebar on desktop later */}
+      <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-3">
+        {/* Features */}
+        {property.features && property.features.length > 0 && (
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-400">
+              Kenmerken
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+              {property.features.map((f: string) => (
+                <Badge key={f} text="text-gray-600" bg="bg-gray-100" size="sm">
+                  {f}
+                </Badge>
+              ))}
             </div>
-            {property.pricePerSqm && (
-              <p className="text-sm text-gray-500 mb-4">
-                €{property.pricePerSqm.toLocaleString('nl-NL')}/m²
+          </div>
+        )}
+
+        {/* Neighborhood */}
+        {property.neighborhood && (
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-400">
+              Buurt: {property.neighborhood.name}
+            </h3>
+            {property.neighborhood.description && (
+              <p className="mb-2 text-sm text-gray-600">
+                {property.neighborhood.description}
               </p>
             )}
-
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Type</span>
-                <span className="font-medium">{property.propertyType}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Woonoppervlakte</span>
-                <span className="font-medium">{property.livingArea} m²</span>
-              </div>
-              {property.plotArea && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Perceel</span>
-                  <span className="font-medium">{property.plotArea} m²</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-gray-500">Kamers</span>
-                <span className="font-medium">{property.rooms}</span>
-              </div>
-              {property.bedrooms != null && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Slaapkamers</span>
-                  <span className="font-medium">{property.bedrooms}</span>
-                </div>
-              )}
-              {property.bathrooms != null && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Badkamers</span>
-                  <span className="font-medium">{property.bathrooms}</span>
-                </div>
-              )}
-              {property.buildYear && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Bouwjaar</span>
-                  <span className="font-medium">{property.buildYear}</span>
-                </div>
-              )}
-              {property.energyLabel && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Energielabel</span>
-                  <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-green-100 text-green-800">
-                    {property.energyLabel}
-                  </span>
-                </div>
-              )}
-              {property.ownershipType && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Eigendom</span>
-                  <span className="font-medium">{property.ownershipType}</span>
-                </div>
-              )}
-              {property.serviceCharges != null && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Servicekosten</span>
-                  <span className="font-medium">
-                    €{property.serviceCharges}/mnd
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className="rounded-lg border border-gray-200 p-6">
-            <h3 className="font-semibold mb-3">Status</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Status</span>
-                <span className="font-medium">{property.listingStatus}</span>
-              </div>
-              {property.listingDate && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Sinds</span>
-                  <span className="font-medium">
-                    {new Date(property.listingDate).toLocaleDateString('nl-NL')}
-                  </span>
-                </div>
-              )}
-              {property.daysOnMarket != null && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Dagen op markt</span>
-                  <span className="font-medium">{property.daysOnMarket}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Funda link */}
-          {property.fundaUrl && (
-            <a
-              href={property.fundaUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center px-4 py-3 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors"
-            >
-              Bekijk op Funda →
-            </a>
-          )}
-
-          {/* Neighborhood */}
-          {property.neighborhood && (
-            <div className="rounded-lg border border-gray-200 p-6">
-              <h3 className="font-semibold mb-3">
-                Buurt: {property.neighborhood.name}
-              </h3>
-              {property.neighborhood.description && (
-                <p className="text-sm text-gray-600 mb-3">
-                  {property.neighborhood.description}
-                </p>
-              )}
-              {property.neighborhood.averagePricePerSqm && (
-                <p className="text-sm">
-                  <span className="text-gray-500">Gem. prijs/m²: </span>
-                  <span className="font-medium">
-                    €
-                    {property.neighborhood.averagePricePerSqm.toLocaleString(
-                      'nl-NL'
-                    )}
-                  </span>
-                </p>
-              )}
-              {property.neighborhood.safetyRating && (
-                <p className="text-sm mt-1">
-                  <span className="text-gray-500">Veiligheid: </span>
-                  <span className="font-medium">
-                    {property.neighborhood.safetyRating}/10
-                  </span>
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Notes (internal) */}
-          {property.notes && (
-            <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-6">
-              <h3 className="font-semibold mb-2 text-yellow-800">
-                📝 Notities
-              </h3>
-              <p className="text-sm text-yellow-700 whitespace-pre-line">
-                {property.notes}
+            {property.neighborhood.averagePricePerSqm && (
+              <p className="text-sm text-gray-500">
+                Gem. prijs/m²: €
+                {property.neighborhood.averagePricePerSqm.toLocaleString('nl-NL')}
               </p>
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
-          {/* Placeholder for scoring — Phase 2 */}
-          <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-gray-400">
-            <p className="text-sm">
-              🎯 AI Scoring komt in Fase 2
+        {/* Notes */}
+        {property.notes && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+            <h3 className="mb-2 text-sm font-bold uppercase tracking-wider text-amber-600">
+              📝 Notities
+            </h3>
+            <p className="text-sm text-amber-700 whitespace-pre-line">
+              {property.notes}
             </p>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
