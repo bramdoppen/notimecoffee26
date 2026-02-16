@@ -1,13 +1,12 @@
 import {defineType, defineField, defineArrayMember} from 'sanity'
-import {PackageIcon, PinIcon, PlayIcon} from '@sanity/icons'
+import {HomeIcon, PlayIcon} from '@sanity/icons'
 
 /**
  * Portable Text — rich text with custom embed blocks.
- * Used in: blogPost.body, store.description, and anywhere rich content is needed.
+ * Used in: page sections and anywhere rich content is needed.
  *
  * Custom blocks:
- * - productEmbed: inline product card (reference → product)
- * - storeEmbed: inline store card (reference → store)
+ * - propertyEmbed: inline property card (reference → property)
  * - ctaButton: styled call-to-action button
  */
 export const portableText = defineType({
@@ -84,62 +83,31 @@ export const portableText = defineType({
       ],
     }),
 
-    // Product embed — renders as compact ProductCard
+    // Property embed — renders as compact PropertyCard
     defineArrayMember({
-      name: 'productEmbed',
-      title: 'Product Embed',
+      name: 'propertyEmbed',
+      title: 'Woning Embed',
       type: 'object',
-      icon: PackageIcon,
+      icon: HomeIcon,
       fields: [
         defineField({
-          name: 'product',
-          title: 'Product',
+          name: 'property',
+          title: 'Woning',
           type: 'reference',
-          to: [{type: 'product'}],
+          to: [{type: 'property'}],
           validation: (rule) => rule.required(),
         }),
       ],
       preview: {
         select: {
-          title: 'product.name',
-          subtitle: 'product.price',
-          media: 'product.image',
+          title: 'property.address',
+          subtitle: 'property.city',
+          media: 'property.mainImage',
         },
         prepare({title, subtitle, media}) {
           return {
-            title: title || 'No product selected',
-            subtitle: subtitle ? `€${subtitle}` : 'Product Embed',
-            media,
-          }
-        },
-      },
-    }),
-
-    // Store embed — renders as compact StoreCard
-    defineArrayMember({
-      name: 'storeEmbed',
-      title: 'Store Embed',
-      type: 'object',
-      icon: PinIcon,
-      fields: [
-        defineField({
-          name: 'store',
-          title: 'Store',
-          type: 'reference',
-          to: [{type: 'store'}],
-          validation: (rule) => rule.required(),
-        }),
-      ],
-      preview: {
-        select: {
-          title: 'store.name',
-          subtitle: 'store.city',
-          media: 'store.image',
-        },
-        prepare({title, subtitle, media}) {
-          return {
-            title: title || 'No store selected',
-            subtitle: subtitle || 'Store Embed',
+            title: title || 'Geen woning geselecteerd',
+            subtitle: subtitle || 'Woning Embed',
             media,
           }
         },
