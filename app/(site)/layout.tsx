@@ -16,8 +16,8 @@ export default async function SiteLayout({
     tags: ["siteSettings"],
   });
 
-  const mainNav = settings?.mainNavigation ?? [];
-  const footerNav = settings?.footerNavigation ?? [];
+  const navigation = settings?.mainNavigation ?? [];
+  const footerNavigation = settings?.footerNavigation ?? [];
   const socialLinks = settings?.socialLinks ?? [];
   const announcement = settings?.announcementBar;
 
@@ -32,16 +32,18 @@ export default async function SiteLayout({
         />
       )}
       <Header
-        navItems={mainNav}
+        navigation={navigation}
         logo={settings?.logo}
         siteName={settings?.siteName ?? "No Time Coffee"}
         hasAnnouncement={!!announcement?.enabled}
       />
       <main className="min-h-screen">{children}</main>
       <Footer
-        navGroups={footerNav}
+        footerNavigation={footerNavigation}
         socialLinks={socialLinks}
         siteName={settings?.siteName ?? "No Time Coffee"}
+        tagline={settings?.tagline}
+        footerText={settings?.footerText}
       />
     </>
   );

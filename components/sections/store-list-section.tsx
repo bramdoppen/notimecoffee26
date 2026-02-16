@@ -1,6 +1,7 @@
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { STORES_QUERY } from "@/sanity/lib/queries";
-import type { StoresQueryResult } from "@/sanity/types";
+// TODO: Replace with generated types once @grind runs `sanity typegen generate`
+type StoresQueryResult = any[];
 import { StoreCard } from "@/components/ui/store-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

@@ -1,4 +1,9 @@
-import { forwardRef, type ButtonHTMLAttributes } from "react";
+import {
+  forwardRef,
+  type ButtonHTMLAttributes,
+  type ElementType,
+  type ComponentPropsWithRef,
+} from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -52,10 +57,44 @@ const buttonVariants = cva(
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants> & {
     loading?: boolean;
+    asChild?: boolean;
   };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, loading, children, disabled, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      loading,
+      asChild,
+      children,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    // When asChild is true, render the child element directly with button styles.
+    // This enables <Button asChild><Link href="...">Click</Link></Button>
+    // without nesting a <button> inside an <a>.
+    if (asChild) {
+      // Extract the single child element and clone it with button classes
+      const child = children as React.ReactElement<any>;
+      if (child && typeof child === "object" && "props" in child) {
+        const { className: childClassName, ...childProps } = child.props;
+        return (
+          <child.type
+            {...childProps}
+            className={cn(
+              buttonVariants({ variant, size }),
+              className,
+              childClassName
+            )}
+          />
+        );
+      }
+    }
+
     return (
       <button
         ref={ref}

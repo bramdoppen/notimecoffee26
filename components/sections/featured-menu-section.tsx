@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { FEATURED_PRODUCTS_QUERY } from "@/sanity/lib/queries";
-import type { FeaturedProductsQueryResult } from "@/sanity/types";
+// TODO: Replace with generated types once @grind runs `sanity typegen generate`
+type FeaturedProductsQueryResult = any[];
 import { ProductCard } from "@/components/ui/product-card";
 import { Button } from "@/components/ui/button";
 
