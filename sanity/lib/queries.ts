@@ -402,7 +402,69 @@ export const ANALYSIS_FOR_PROPERTY_QUERY = defineQuery(`*[
   }
 }`);
 
-/** Top analyses — for dashboard view */
+/**
+ * Dashboard card query — PropertySummary projection.
+ *
+ * Joins analysis → property with all fields needed for PropertyCard.
+ * GROQ handles: arithmetic (investment range), count (negotiation signals).
+ * Client handles: budgetStatus/budgetUtilization (needs user's maxBudget),
+ *                 topRiskFlags sorting (from risks array).
+ */
+export const DASHBOARD_ANALYSES_QUERY = defineQuery(`*[
+  _type == "propertyAnalysis"
+  && matchScore >= $minScore
+] | order(matchScore desc) [0...$limit] {
+  // --- Analysis fields ---
+  matchScore,
+  tier,
+  recommendation,
+  overallCondition,
+  overallRiskLevel,
+  dealbreakers,
+
+  // Financial — raw fields for client-side budget derivation
+  totalInvestment,
+  totalRenovationCostLow,
+  totalRenovationCostMid,
+  totalRenovationCostHigh,
+  withinBudget,
+  budgetRemaining,
+
+  // Investment range (GROQ arithmetic)
+  "totalInvestmentLow": totalInvestment - (totalRenovationCostMid - totalRenovationCostLow),
+  "totalInvestmentHigh": totalInvestment + (totalRenovationCostHigh - totalRenovationCostMid),
+
+  // Risks — top-level array for client-side sorting + slicing to top 2
+  risks[] {
+    category,
+    level
+  },
+
+  // Negotiation signal count (GROQ count)
+  "negotiationSignalCount": count(negotiationSignals),
+
+  // --- Property fields (dereferenced) ---
+  property->{
+    _id,
+    address,
+    "slug": slug.current,
+    city,
+    askingPrice,
+    livingArea,
+    rooms,
+    bedrooms,
+    bathrooms,
+    energyLabel,
+    starred,
+    fundaUrl,
+    daysOnMarket,
+    "neighborhoodName": neighborhood->name,
+    "imageUrl": mainImage.asset->url,
+    "imageLqip": mainImage.asset->metadata.lqip
+  }
+}`);
+
+/** Top analyses — for dashboard view (legacy, use DASHBOARD_ANALYSES_QUERY instead) */
 export const TOP_ANALYSES_QUERY = defineQuery(`*[
   _type == "propertyAnalysis"
   && matchScore >= $minScore

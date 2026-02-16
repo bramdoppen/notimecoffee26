@@ -1076,6 +1076,47 @@ export type ANALYSIS_FOR_PROPERTY_QUERYResult = {
     name: string | null;
   } | null;
 } | null;
+// Variable: DASHBOARD_ANALYSES_QUERY
+// Query: *[  _type == "propertyAnalysis"  && matchScore >= $minScore] | order(matchScore desc) [0...$limit] {  // --- Analysis fields ---  matchScore,  tier,  recommendation,  overallCondition,  overallRiskLevel,  dealbreakers,  // Financial — raw fields for client-side budget derivation  totalInvestment,  totalRenovationCostLow,  totalRenovationCostMid,  totalRenovationCostHigh,  withinBudget,  budgetRemaining,  // Investment range (GROQ arithmetic)  "totalInvestmentLow": totalInvestment - (totalRenovationCostMid - totalRenovationCostLow),  "totalInvestmentHigh": totalInvestment + (totalRenovationCostHigh - totalRenovationCostMid),  // Risks — top-level array for client-side sorting + slicing to top 2  risks[] {    category,    level  },  // Negotiation signal count (GROQ count)  "negotiationSignalCount": count(negotiationSignals),  // --- Property fields (dereferenced) ---  property->{    _id,    address,    "slug": slug.current,    city,    askingPrice,    livingArea,    rooms,    bedrooms,    bathrooms,    energyLabel,    starred,    fundaUrl,    daysOnMarket,    "neighborhoodName": neighborhood->name,    "imageUrl": mainImage.asset->url,    "imageLqip": mainImage.asset->metadata.lqip  }}
+export type DASHBOARD_ANALYSES_QUERYResult = Array<{
+  matchScore: number | null;
+  tier: "excellent" | "moderate" | "not_recommended" | "strong" | "weak" | null;
+  recommendation: "needs_research" | "skip" | "visit_immediately" | "worth_visiting" | null;
+  overallCondition: "bad" | "excellent" | "fair" | "good" | "poor" | null;
+  overallRiskLevel: "high" | "low" | "medium" | null;
+  dealbreakers: Array<string> | null;
+  totalInvestment: number | null;
+  totalRenovationCostLow: number | null;
+  totalRenovationCostMid: number | null;
+  totalRenovationCostHigh: number | null;
+  withinBudget: boolean | null;
+  budgetRemaining: number | null;
+  totalInvestmentLow: number | null;
+  totalInvestmentHigh: number | null;
+  risks: Array<{
+    category: "asbest" | "bestemmingsplan" | "bodem" | "erfpacht" | "fundering" | "markt" | "overig" | "overstroming" | "vve" | null;
+    level: "high" | "low" | "medium" | null;
+  }> | null;
+  negotiationSignalCount: null;
+  property: {
+    _id: string;
+    address: string | null;
+    slug: string | null;
+    city: string | null;
+    askingPrice: number | null;
+    livingArea: number | null;
+    rooms: number | null;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    energyLabel: "A" | "A+" | "A++" | "A+++" | "A++++" | "B" | "C" | "D" | "E" | "F" | "G" | null;
+    starred: boolean | null;
+    fundaUrl: string | null;
+    daysOnMarket: number | null;
+    neighborhoodName: string | null;
+    imageUrl: string | null;
+    imageLqip: string | null;
+  } | null;
+}>;
 // Variable: TOP_ANALYSES_QUERY
 // Query: *[  _type == "propertyAnalysis"  && matchScore >= $minScore] | order(matchScore desc) [0...$limit] {  _id,  matchScore,  tier,  recommendation,  summary,  hardCriteriaPass,  overallCondition,  totalInvestment,  overallRiskLevel,  dealbreakers,  analyzedAt,  property->{    _id,    address,    slug,    zipCode,    city,    propertyType,    askingPrice,    livingArea,    rooms,    bedrooms,    energyLabel,    listingStatus,    starred,    mainImage {      asset->{        _id,        url,        metadata { lqip, dimensions }      },      alt,      hotspot,      crop    }  }}
 export type TOP_ANALYSES_QUERYResult = Array<{
@@ -1496,6 +1537,7 @@ declare module "@sanity/client" {
     "*[\n  _type == \"property\"\n  && fundaId == $fundaId\n][0] {\n  _id,\n  fundaId,\n  scrapedAt,\n  listingStatus\n}": PROPERTY_BY_FUNDA_ID_QUERYResult;
     "*[\n  _type == \"property\"\n  && slug.current == $slug\n][0] {\n  _id,\n  address,\n  slug,\n  zipCode,\n  city,\n  propertyType,\n  askingPrice,\n  livingArea,\n  plotArea,\n  rooms,\n  bedrooms,\n  bathrooms,\n  buildYear,\n  energyLabel,\n  features,\n  description,\n  coordinates,\n  pricePerSqm,\n  serviceCharges,\n  ownershipType,\n  erfpachtDetails,\n  mainImage {\n    asset->{\n      _id,\n      url,\n      metadata { lqip, dimensions }\n    },\n    alt,\n    hotspot,\n    crop\n  },\n  photos[] {\n    asset->{\n      _id,\n      url,\n      metadata { lqip, dimensions }\n    },\n    alt,\n    category\n  },\n  floorPlanUrl,\n  fundaUrl,\n  fundaId,\n  sourceType,\n  listingStatus,\n  listingDate,\n  daysOnMarket,\n  starred,\n  notes,\n  neighborhood->{\n    _id,\n    name,\n    slug,\n    city,\n    description,\n    averagePricePerSqm,\n    amenities,\n    safetyRating\n  },\n  \"analysis\": *[\n    _type == \"propertyAnalysis\"\n    && property._ref == ^._id\n  ] | order(analyzedAt desc) [0] {\n    _id,\n    matchScore,\n    tier,\n    recommendation,\n    summary,\n    hardCriteriaPass,\n    hardCriteriaResults[] {\n      criterion,\n      pass,\n      actualValue,\n      requiredValue,\n      reasoning\n    },\n    softCriteriaScore,\n    softCriteriaResults[] {\n      criterion,\n      score,\n      weight,\n      weightedScore,\n      reasoning\n    },\n    overallCondition,\n    totalRenovationCostLow,\n    totalRenovationCostMid,\n    totalRenovationCostHigh,\n    renovationBreakdown[] {\n      category,\n      needed,\n      costLow,\n      costMid,\n      costHigh,\n      reasoning\n    },\n    totalInvestment,\n    kostenKoper,\n    monthlyMortgage,\n    monthlyTotal,\n    erfpachtNpv,\n    withinBudget,\n    budgetRemaining,\n    overallRiskLevel,\n    risks[] {\n      category,\n      level,\n      description,\n      mitigation\n    },\n    vveData {\n      monthlyContribution,\n      hasReserveFund,\n      hasMaintenancePlan,\n      kvkRegistered,\n      hasBuildingInsurance\n    },\n    dealbreakers,\n    analyzedAt,\n    modelVersion,\n    searchProfile->{\n      _id,\n      name\n    }\n  }\n}": PROPERTY_WITH_ANALYSIS_QUERYResult;
     "*[\n  _type == \"propertyAnalysis\"\n  && property._ref == $propertyId\n] | order(analyzedAt desc) [0] {\n  _id,\n  matchScore,\n  tier,\n  recommendation,\n  summary,\n  hardCriteriaPass,\n  hardCriteriaResults[] {\n    criterion,\n    pass,\n    actualValue,\n    requiredValue,\n    reasoning\n  },\n  softCriteriaScore,\n  softCriteriaResults[] {\n    criterion,\n    score,\n    weight,\n    weightedScore,\n    reasoning\n  },\n  overallCondition,\n  totalRenovationCostLow,\n  totalRenovationCostMid,\n  totalRenovationCostHigh,\n  renovationBreakdown[] {\n    category,\n    needed,\n    costLow,\n    costMid,\n    costHigh,\n    reasoning\n  },\n  totalInvestment,\n  kostenKoper,\n  monthlyMortgage,\n  monthlyTotal,\n  erfpachtNpv,\n  withinBudget,\n  budgetRemaining,\n  overallRiskLevel,\n  risks[] {\n    category,\n    level,\n    description,\n    mitigation\n  },\n  vveData {\n    monthlyContribution,\n    hasReserveFund,\n    hasMaintenancePlan,\n    kvkRegistered,\n    hasBuildingInsurance\n  },\n  dealbreakers,\n  analyzedAt,\n  modelVersion,\n  searchProfile->{\n    _id,\n    name\n  }\n}": ANALYSIS_FOR_PROPERTY_QUERYResult;
+    "*[\n  _type == \"propertyAnalysis\"\n  && matchScore >= $minScore\n] | order(matchScore desc) [0...$limit] {\n  // --- Analysis fields ---\n  matchScore,\n  tier,\n  recommendation,\n  overallCondition,\n  overallRiskLevel,\n  dealbreakers,\n\n  // Financial \u2014 raw fields for client-side budget derivation\n  totalInvestment,\n  totalRenovationCostLow,\n  totalRenovationCostMid,\n  totalRenovationCostHigh,\n  withinBudget,\n  budgetRemaining,\n\n  // Investment range (GROQ arithmetic)\n  \"totalInvestmentLow\": totalInvestment - (totalRenovationCostMid - totalRenovationCostLow),\n  \"totalInvestmentHigh\": totalInvestment + (totalRenovationCostHigh - totalRenovationCostMid),\n\n  // Risks \u2014 top-level array for client-side sorting + slicing to top 2\n  risks[] {\n    category,\n    level\n  },\n\n  // Negotiation signal count (GROQ count)\n  \"negotiationSignalCount\": count(negotiationSignals),\n\n  // --- Property fields (dereferenced) ---\n  property->{\n    _id,\n    address,\n    \"slug\": slug.current,\n    city,\n    askingPrice,\n    livingArea,\n    rooms,\n    bedrooms,\n    bathrooms,\n    energyLabel,\n    starred,\n    fundaUrl,\n    daysOnMarket,\n    \"neighborhoodName\": neighborhood->name,\n    \"imageUrl\": mainImage.asset->url,\n    \"imageLqip\": mainImage.asset->metadata.lqip\n  }\n}": DASHBOARD_ANALYSES_QUERYResult;
     "*[\n  _type == \"propertyAnalysis\"\n  && matchScore >= $minScore\n] | order(matchScore desc) [0...$limit] {\n  _id,\n  matchScore,\n  tier,\n  recommendation,\n  summary,\n  hardCriteriaPass,\n  overallCondition,\n  totalInvestment,\n  overallRiskLevel,\n  dealbreakers,\n  analyzedAt,\n  property->{\n    _id,\n    address,\n    slug,\n    zipCode,\n    city,\n    propertyType,\n    askingPrice,\n    livingArea,\n    rooms,\n    bedrooms,\n    energyLabel,\n    listingStatus,\n    starred,\n    mainImage {\n      asset->{\n        _id,\n        url,\n        metadata { lqip, dimensions }\n      },\n      alt,\n      hotspot,\n      crop\n    }\n  }\n}": TOP_ANALYSES_QUERYResult;
     "*[\n  _type == \"propertyAnalysis\"\n  && searchProfile._ref == $profileId\n] | order(matchScore desc) {\n  _id,\n  matchScore,\n  tier,\n  recommendation,\n  hardCriteriaPass,\n  totalInvestment,\n  overallRiskLevel,\n  analyzedAt,\n  property->{\n    _id,\n    address,\n    slug,\n    city,\n    askingPrice,\n    livingArea,\n    rooms,\n    listingStatus,\n    starred,\n    mainImage {\n      asset->{\n        _id,\n        url,\n        metadata { lqip }\n      },\n      alt\n    }\n  }\n}": ANALYSES_BY_PROFILE_QUERYResult;
     "*[\n  _type == \"searchProfile\"\n  && active == true\n] {\n  _id,\n  name,\n  slug,\n  cities,\n  minPrice,\n  maxPrice,\n  maxTotalCost,\n  propertyTypes,\n  minLivingArea,\n  minRooms,\n  minBedrooms,\n  mustHaveFeatures,\n  preferredEnergyLabels,\n  maxBuildYear,\n  niceToHaveFeatures,\n  notes,\n  neighborhoods[]->{\n    _id,\n    name,\n    city\n  }\n}": ACTIVE_SEARCH_PROFILES_QUERYResult;
