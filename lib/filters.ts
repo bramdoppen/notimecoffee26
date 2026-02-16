@@ -9,7 +9,7 @@
  */
 
 import type { PropertySummary } from '@/lib/types';
-import type { Tier, RiskLevel } from '@/lib/scoring-labels';
+import type { Tier, RiskLevel, BudgetStatus } from '@/lib/scoring-labels';
 
 // ---------------------------------------------------------------------------
 // Filter State
@@ -22,6 +22,7 @@ export interface FilterState {
   maxRisk: RiskLevel | null;
   cities: string[];
   tiers: Tier[];
+  budgetStatuses: BudgetStatus[];
   starredOnly: boolean;
   sortBy: SortOption;
 }
@@ -46,9 +47,10 @@ export const DEFAULT_FILTERS: FilterState = {
   maxPrice: null,
   minScore: 0,
   maxRisk: null,
-  cities: [],
-  tiers: [],
-  starredOnly: false,
+    cities: [],
+    tiers: [],
+    budgetStatuses: [],
+    starredOnly: false,
   sortBy: 'score_desc',
 };
 
@@ -64,6 +66,7 @@ export function parseFilters(params: URLSearchParams): FilterState {
     maxRisk: (params.get('maxRisk') as RiskLevel) ?? null,
     cities: params.getAll('city'),
     tiers: params.getAll('tier') as Tier[],
+    budgetStatuses: params.getAll('budget') as BudgetStatus[],
     starredOnly: params.get('starred') === '1',
     sortBy: (params.get('sort') as SortOption) ?? 'score_desc',
   };
@@ -78,6 +81,7 @@ export function serializeFilters(filters: FilterState): URLSearchParams {
   if (filters.maxRisk) params.set('maxRisk', filters.maxRisk);
   for (const city of filters.cities) params.append('city', city);
   for (const tier of filters.tiers) params.append('tier', tier);
+  for (const bs of filters.budgetStatuses) params.append('budget', bs);
   if (filters.starredOnly) params.set('starred', '1');
   if (filters.sortBy !== 'score_desc') params.set('sort', filters.sortBy);
 
@@ -93,6 +97,7 @@ export function activeFilterCount(filters: FilterState): number {
   if (filters.maxRisk) count++;
   if (filters.cities.length > 0) count++;
   if (filters.tiers.length > 0) count++;
+  if (filters.budgetStatuses.length > 0) count++;
   if (filters.starredOnly) count++;
   return count;
 }
@@ -112,6 +117,7 @@ export function filterProperties(
     if (filters.maxRisk && !isRiskWithin(p.overallRisk, filters.maxRisk)) return false;
     if (filters.cities.length > 0 && !filters.cities.includes(p.city)) return false;
     if (filters.tiers.length > 0 && !filters.tiers.includes(p.matchTier)) return false;
+    if (filters.budgetStatuses.length > 0 && !filters.budgetStatuses.includes(p.budgetStatus)) return false;
     if (filters.starredOnly && !p.starred) return false;
     return true;
   });
@@ -137,8 +143,9 @@ export function sortProperties(
     case 'investment_asc':
       return sorted.sort((a, b) => a.totalInvestmentMid - b.totalInvestmentMid);
     case 'date_desc':
+      // Lowest daysOnMarket = newest listing. null = unknown → sort last.
       return sorted.sort(
-        (a, b) => (b.daysOnMarket ?? 0) - (a.daysOnMarket ?? 0),
+        (a, b) => (a.daysOnMarket ?? Infinity) - (b.daysOnMarket ?? Infinity),
       );
     default:
       return sorted;
