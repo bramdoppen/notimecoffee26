@@ -199,6 +199,155 @@ export const PROPERTY_BY_FUNDA_ID_QUERY = defineQuery(`*[
 }`);
 
 // ---------------------------------------------------------------------------
+// Property Analyses
+// ---------------------------------------------------------------------------
+
+/** Analysis for a specific property (latest) */
+export const ANALYSIS_FOR_PROPERTY_QUERY = defineQuery(`*[
+  _type == "propertyAnalysis"
+  && property._ref == $propertyId
+] | order(analyzedAt desc) [0] {
+  _id,
+  matchScore,
+  tier,
+  recommendation,
+  summary,
+  hardCriteriaPass,
+  hardCriteriaResults[] {
+    criterion,
+    pass,
+    actualValue,
+    requiredValue,
+    reasoning
+  },
+  softCriteriaScore,
+  softCriteriaResults[] {
+    criterion,
+    score,
+    weight,
+    weightedScore,
+    reasoning
+  },
+  overallCondition,
+  totalRenovationCostLow,
+  totalRenovationCostMid,
+  totalRenovationCostHigh,
+  renovationBreakdown[] {
+    category,
+    needed,
+    costLow,
+    costMid,
+    costHigh,
+    reasoning
+  },
+  totalInvestment,
+  kostenKoper,
+  monthlyMortgage,
+  monthlyTotal,
+  erfpachtNpv,
+  withinBudget,
+  budgetRemaining,
+  overallRiskLevel,
+  risks[] {
+    category,
+    level,
+    description,
+    mitigation
+  },
+  vveData {
+    monthlyContribution,
+    hasReserveFund,
+    hasMaintenancePlan,
+    kvkRegistered,
+    hasBuildingInsurance
+  },
+  dealbreakers,
+  analyzedAt,
+  modelVersion,
+  searchProfile->{
+    _id,
+    name
+  }
+}`);
+
+/** Top analyses — for dashboard view */
+export const TOP_ANALYSES_QUERY = defineQuery(`*[
+  _type == "propertyAnalysis"
+  && matchScore >= $minScore
+] | order(matchScore desc) [0...$limit] {
+  _id,
+  matchScore,
+  tier,
+  recommendation,
+  summary,
+  hardCriteriaPass,
+  overallCondition,
+  totalInvestment,
+  overallRiskLevel,
+  dealbreakers,
+  analyzedAt,
+  property->{
+    _id,
+    address,
+    slug,
+    zipCode,
+    city,
+    propertyType,
+    askingPrice,
+    livingArea,
+    rooms,
+    bedrooms,
+    energyLabel,
+    listingStatus,
+    starred,
+    mainImage {
+      asset->{
+        _id,
+        url,
+        metadata { lqip, dimensions }
+      },
+      alt,
+      hotspot,
+      crop
+    }
+  }
+}`);
+
+/** All analyses for a search profile */
+export const ANALYSES_BY_PROFILE_QUERY = defineQuery(`*[
+  _type == "propertyAnalysis"
+  && searchProfile._ref == $profileId
+] | order(matchScore desc) {
+  _id,
+  matchScore,
+  tier,
+  recommendation,
+  hardCriteriaPass,
+  totalInvestment,
+  overallRiskLevel,
+  analyzedAt,
+  property->{
+    _id,
+    address,
+    slug,
+    city,
+    askingPrice,
+    livingArea,
+    rooms,
+    listingStatus,
+    starred,
+    mainImage {
+      asset->{
+        _id,
+        url,
+        metadata { lqip }
+      },
+      alt
+    }
+  }
+}`);
+
+// ---------------------------------------------------------------------------
 // Search Profiles
 // ---------------------------------------------------------------------------
 

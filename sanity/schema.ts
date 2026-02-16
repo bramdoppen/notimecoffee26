@@ -4,10 +4,12 @@ import type { SchemaTypeDefinition } from 'sanity';
 import { property } from './schemas/documents/property';
 import { neighborhood } from './schemas/documents/neighborhood';
 import { searchProfile } from './schemas/documents/searchProfile';
+import { propertyAnalysis } from './schemas/documents/propertyAnalysis';
 import { page } from './schemas/documents/page';
 
 // Singleton schemas
 import { siteSettings } from './schemas/singletons/siteSettings';
+import { userPreferences } from './schemas/singletons/userPreferences';
 
 // Object schemas
 import { seoFields } from './schemas/objects/seoFields';
@@ -27,10 +29,12 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     property,
     neighborhood,
     searchProfile,
+    propertyAnalysis,
     page,
 
     // Singletons
     siteSettings,
+    userPreferences,
 
     // Objects
     seoFields,
