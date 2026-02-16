@@ -1,7 +1,10 @@
 import { Suspense } from "react";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { PRODUCTS_QUERY, PRODUCT_CATEGORIES_QUERY } from "@/sanity/lib/queries";
-import type { ProductsQueryResult, ProductCategoriesQueryResult } from "@/sanity/types";
+// TODO: Replace with generated types once @grind runs `sanity typegen generate`
+// import type { ProductsQueryResult, ProductCategoriesQueryResult } from "@/sanity/types";
+type ProductsQueryResult = any[];
+type ProductCategoriesQueryResult = any[];
 import { ProductCard } from "@/components/ui/product-card";
 import { MenuFilterBar } from "@/components/sections/menu-filter-bar";
 import type { Metadata } from "next";
