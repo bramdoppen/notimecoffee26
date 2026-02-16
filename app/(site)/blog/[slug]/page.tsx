@@ -229,9 +229,9 @@ export default async function BlogPostPage({
           </div>
         </header>
 
-        {/* Hero image — full container width */}
+        {/* Hero image — full container width, space-12 gap above and below */}
         {post.mainImage?.asset?.url && (
-          <div className="container-site mb-(--space-12)">
+          <div className="container-site mt-(--space-12) mb-(--space-12)">
             <div className="relative aspect-video rounded-lg overflow-hidden">
               <Image
                 src={urlFor(post.mainImage).width(1280).height(720).url()}
