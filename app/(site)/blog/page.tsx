@@ -1,5 +1,5 @@
 import { sanityFetch } from "@/sanity/lib/fetch";
-import { POSTS_QUERY } from "@/sanity/lib/queries";
+import { BLOG_POSTS_QUERY } from "@/sanity/lib/queries";
 import { BlogCard } from "@/components/ui/blog-card";
 import type { Metadata } from "next";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function BlogPage() {
   const posts = await sanityFetch<any[]>({
-    query: POSTS_QUERY,
+    query: BLOG_POSTS_QUERY,
     tags: ["blogPost"],
   });
 

@@ -1,5 +1,5 @@
 import { sanityFetch } from "@/sanity/lib/fetch";
-import { SETTINGS_QUERY } from "@/sanity/lib/queries";
+import { SITE_SETTINGS_QUERY } from "@/sanity/lib/queries";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
@@ -12,7 +12,7 @@ export default async function SiteLayout({
   // Fetch site settings for nav, footer, and announcement bar
   // This runs once per layout render and is cached via ISR
   const settings = await sanityFetch<any>({
-    query: SETTINGS_QUERY,
+    query: SITE_SETTINGS_QUERY,
     tags: ["siteSettings"],
   });
 
