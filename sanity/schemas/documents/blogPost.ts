@@ -42,7 +42,7 @@ export const blogPost = defineType({
       type: 'image',
       options: {
         hotspot: true,
-        aiAssist: {imageDescriptionField: 'alt'},
+        // aiAssist: {imageDescriptionField: 'alt'}, // Requires @sanity/assist plugin
       },
       fields: [
         defineField({

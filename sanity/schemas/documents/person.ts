@@ -47,9 +47,7 @@ export const person = defineType({
       ],
       options: {
         hotspot: true,
-        aiAssist: {
-          imageDescriptionField: 'alt',
-        },
+        // aiAssist: {imageDescriptionField: 'alt'}, // Requires @sanity/assist plugin
       },
       validation: (rule) => rule.required(),
     }),
