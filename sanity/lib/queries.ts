@@ -373,7 +373,6 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(`*[
     },
     _type == "featuredMenuSection" => {
       heading,
-      description,
       autoFeatured,
       maxItems,
       items[]->{
@@ -430,9 +429,9 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(`*[
 // Site Settings (Singleton)
 // ---------------------------------------------------------------------------
 
-/** Global site settings — nav, footer, branding, announcement bar */
+/** Global site settings — nav, footer, branding, announcement bar (singleton) */
 export const SITE_SETTINGS_QUERY = defineQuery(`*[
-  _type == "siteSettings"
+  _id == "siteSettings"
 ][0] {
   siteName,
   tagline,
