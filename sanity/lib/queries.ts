@@ -202,6 +202,138 @@ export const PROPERTY_BY_FUNDA_ID_QUERY = defineQuery(`*[
 // Property Analyses
 // ---------------------------------------------------------------------------
 
+/** Combined property + latest analysis — detail page (single query, no waterfall) */
+export const PROPERTY_WITH_ANALYSIS_QUERY = defineQuery(`*[
+  _type == "property"
+  && slug.current == $slug
+][0] {
+  _id,
+  address,
+  slug,
+  zipCode,
+  city,
+  propertyType,
+  askingPrice,
+  livingArea,
+  plotArea,
+  rooms,
+  bedrooms,
+  bathrooms,
+  buildYear,
+  energyLabel,
+  features,
+  description,
+  coordinates,
+  pricePerSqm,
+  serviceCharges,
+  ownershipType,
+  erfpachtDetails,
+  mainImage {
+    asset->{
+      _id,
+      url,
+      metadata { lqip, dimensions }
+    },
+    alt,
+    hotspot,
+    crop
+  },
+  photos[] {
+    asset->{
+      _id,
+      url,
+      metadata { lqip, dimensions }
+    },
+    alt,
+    category
+  },
+  floorPlanUrl,
+  fundaUrl,
+  fundaId,
+  sourceType,
+  listingStatus,
+  listingDate,
+  daysOnMarket,
+  starred,
+  notes,
+  neighborhood->{
+    _id,
+    name,
+    slug,
+    city,
+    description,
+    averagePricePerSqm,
+    amenities,
+    safetyRating
+  },
+  "analysis": *[
+    _type == "propertyAnalysis"
+    && property._ref == ^._id
+  ] | order(analyzedAt desc) [0] {
+    _id,
+    matchScore,
+    tier,
+    recommendation,
+    summary,
+    hardCriteriaPass,
+    hardCriteriaResults[] {
+      criterion,
+      pass,
+      actualValue,
+      requiredValue,
+      reasoning
+    },
+    softCriteriaScore,
+    softCriteriaResults[] {
+      criterion,
+      score,
+      weight,
+      weightedScore,
+      reasoning
+    },
+    overallCondition,
+    totalRenovationCostLow,
+    totalRenovationCostMid,
+    totalRenovationCostHigh,
+    renovationBreakdown[] {
+      category,
+      needed,
+      costLow,
+      costMid,
+      costHigh,
+      reasoning
+    },
+    totalInvestment,
+    kostenKoper,
+    monthlyMortgage,
+    monthlyTotal,
+    erfpachtNpv,
+    withinBudget,
+    budgetRemaining,
+    overallRiskLevel,
+    risks[] {
+      category,
+      level,
+      description,
+      mitigation
+    },
+    vveData {
+      monthlyContribution,
+      hasReserveFund,
+      hasMaintenancePlan,
+      kvkRegistered,
+      hasBuildingInsurance
+    },
+    dealbreakers,
+    analyzedAt,
+    modelVersion,
+    searchProfile->{
+      _id,
+      name
+    }
+  }
+}`);
+
 /** Analysis for a specific property (latest) */
 export const ANALYSIS_FOR_PROPERTY_QUERY = defineQuery(`*[
   _type == "propertyAnalysis"
@@ -544,4 +676,45 @@ export const SITE_SETTINGS_QUERY = defineQuery(`*[
     linkText
   },
   defaultSeo
+}`);
+
+// ---------------------------------------------------------------------------
+// User Preferences (Singleton)
+// ---------------------------------------------------------------------------
+
+/**
+ * User preferences — layout-level fetch.
+ * This is a singleton that rarely changes. Fetch in (site)/layout.tsx
+ * and pass via context to avoid per-page queries.
+ */
+export const USER_PREFERENCES_QUERY = defineQuery(`*[
+  _id == "userPreferences"
+][0] {
+  softWeights[] {
+    criterion,
+    weight,
+    label
+  },
+  dealbreakers[] {
+    criterion,
+    threshold,
+    reason,
+    enabled
+  },
+  hardPenaltyCaps {
+    maxPenaltyPerCriterion,
+    totalPenaltyCap
+  },
+  tierThresholds {
+    excellent,
+    strong,
+    moderate,
+    weak
+  },
+  vveThresholds {
+    maxMonthlyContribution,
+    requireReserveFund,
+    requireMaintenancePlan,
+    requireKvkRegistration
+  }
 }`);
