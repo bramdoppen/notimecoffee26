@@ -74,6 +74,18 @@
   --color-warning: #C4652A;
   --color-error: #B83232;
 
+  /* --- Colors: Scoring (AI Aankoopmakelaar) --- */
+  /* Tier badge backgrounds */
+  --color-score-top: #16a34a;
+  --color-score-good: #3b7dd8;
+  --color-score-fair: #d97706;
+  --color-score-poor: #dc2626;
+
+  /* Score badge sizes */
+  --score-badge-sm: 2.5rem;   /* 40px — mobile */
+  --score-badge-md: 3rem;     /* 48px — card */
+  --score-badge-lg: 4.5rem;   /* 72px — detail view */
+
   /* --- Typography --- */
   --font-display: "DM Serif Display", Georgia, serif;
   --font-body: "DM Sans", system-ui, sans-serif;
