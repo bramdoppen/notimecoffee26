@@ -33,15 +33,18 @@ function BlogCard({ post, className }: BlogCardProps) {
     <Link href={`/blog/${post.slug.current}`} className={cn("block", className)}>
       <Card className="h-full">
         <CardImage aspectRatio="16/9">
-          <Image
-            src={urlFor(post.mainImage).width(600).height(338).url()}
-            alt={post.mainImage.alt || post.title}
-            width={600}
-            height={338}
-            className="w-full h-full object-cover"
-            placeholder="blur"
-            blurDataURL={post.mainImage.asset.metadata.lqip}
-          />
+          {post.mainImage ? (
+            <Image
+              src={urlFor(post.mainImage).width(600).height(338).url()}
+              alt={post.mainImage.alt || post.title}
+              width={600}
+              height={338}
+              className="w-full h-full object-cover"
+              {...(post.mainImage.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: post.mainImage.asset.metadata.lqip } : {})}
+            />
+          ) : (
+            <div className="w-full h-full bg-crema-200 flex items-center justify-center text-4xl">📝</div>
+          )}
         </CardImage>
         <CardContent className="flex flex-col gap-(--space-2)">
           {post.categories && post.categories.length > 0 && (

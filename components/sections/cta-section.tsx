@@ -56,8 +56,7 @@ function CtaSection({
             alt=""
             fill
             className="object-cover"
-            placeholder="blur"
-            blurDataURL={backgroundImage.asset.metadata.lqip}
+            {...(backgroundImage.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: backgroundImage.asset.metadata.lqip } : {})}
           />
           <div className="absolute inset-0 bg-sage-50/85" />
         </>

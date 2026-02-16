@@ -78,7 +78,7 @@ function Header({ siteName, logo, navigation, transparent = false, hasAnnounceme
           <Link href="/" className="shrink-0">
             {logo ? (
               <Image
-                src={logo.asset.url}
+                src={logo.asset?.url ?? ""}
                 alt={siteName}
                 width={140}
                 height={40}

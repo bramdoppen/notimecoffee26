@@ -32,7 +32,7 @@ function ProductEmbed({
             height={128}
             className="w-full h-full object-cover"
             placeholder="blur"
-            blurDataURL={product.image.asset.metadata.lqip}
+            blurDataURL={product.image?.asset?.metadata?.lqip ?? undefined}
           />
         </div>
         <div className="flex-1 min-w-0">
@@ -77,7 +77,7 @@ function StoreEmbed({
             height={128}
             className="w-full h-full object-cover"
             placeholder="blur"
-            blurDataURL={store.image.asset.metadata.lqip}
+            blurDataURL={store.image?.asset?.metadata?.lqip ?? undefined}
           />
         </div>
         <div className="flex-1 min-w-0">

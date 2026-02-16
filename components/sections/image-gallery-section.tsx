@@ -32,8 +32,7 @@ function GridLayout({ images }: { images: GalleryImage[] }) {
             alt={image.alt || ""}
             fill
             className="object-cover transition-transform duration-(--transition-base) group-hover:scale-[1.02]"
-            placeholder="blur"
-            blurDataURL={image.asset.metadata.lqip}
+            {...(image.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: image.asset.metadata.lqip } : {})}
           />
           {image.caption && (
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/60 to-transparent p-(--space-3) pt-(--space-8)">
@@ -67,7 +66,8 @@ function CarouselLayout({ images }: { images: GalleryImage[] }) {
                 fill
                 className="object-cover"
                 placeholder="blur"
-                blurDataURL={image.asset.metadata.lqip}
+            blurDataURL={image.asset?.metadata?.lqip ?? undefined}
+
               />
               {image.caption && (
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/60 to-transparent p-(--space-4) pt-(--space-8)">
@@ -130,11 +130,10 @@ function MasonryLayout({ images }: { images: GalleryImage[] }) {
           <Image
             src={urlFor(image).width(500).url()}
             alt={image.alt || ""}
-            width={image.asset.metadata.dimensions.width}
-            height={image.asset.metadata.dimensions.height}
+            width={image.asset?.metadata?.dimensions?.width ?? 500}
+            height={image.asset?.metadata?.dimensions?.height ?? 500}
             className="w-full transition-transform duration-(--transition-base) group-hover:scale-[1.02]"
-            placeholder="blur"
-            blurDataURL={image.asset.metadata.lqip}
+            {...(image.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: image.asset.metadata.lqip } : {})}
           />
           {image.caption && (
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/60 to-transparent p-(--space-3) pt-(--space-8)">

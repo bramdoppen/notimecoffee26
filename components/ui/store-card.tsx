@@ -84,14 +84,18 @@ function StoreCard({ store, variant = "full", className }: StoreCardProps) {
           "aspect-[4/3] lg:aspect-auto"
         )}
       >
-        <Image
-          src={urlFor(store.image).width(500).height(375).url()}
-          alt={store.image.alt || store.name}
-          width={500}
-          height={375}
-          className="w-full h-full object-cover"
-          {...(store.image.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: store.image.asset.metadata.lqip } : {})}
-        />
+        {store.image ? (
+          <Image
+            src={urlFor(store.image).width(500).height(375).url()}
+            alt={store.image.alt || store.name}
+            width={500}
+            height={375}
+            className="w-full h-full object-cover"
+            {...(store.image.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: store.image.asset.metadata.lqip } : {})}
+          />
+        ) : (
+          <div className="w-full h-full bg-crema-200 flex items-center justify-center text-4xl">📍</div>
+        )}
       </div>
       <div className={cn("p-(--space-4) flex flex-col gap-(--space-2)", variant === "full" && "lg:flex-1")}>
         <span className="text-xs font-medium uppercase tracking-wider text-forest-600">

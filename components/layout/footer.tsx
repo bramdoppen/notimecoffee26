@@ -55,7 +55,7 @@ function Footer({
           <div className="space-y-(--space-4)">
             {logo ? (
               <Image
-                src={logo.asset.url}
+                src={logo.asset?.url ?? ""}
                 alt={siteName}
                 width={140}
                 height={40}

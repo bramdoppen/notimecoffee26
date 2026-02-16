@@ -15,14 +15,18 @@ function ProductCard({ item, className }: ProductCardProps) {
     <Link href={`/menu/${item.slug.current}`} className={cn("block", className)}>
       <Card className="h-full">
         <CardImage>
-          <Image
-            src={urlFor(item.image).width(400).height(300).url()}
-            alt={item.image.alt || item.name}
-            width={400}
-            height={300}
-            className="w-full h-full object-cover"
-            {...(item.image.asset?.metadata?.lqip ? { placeholder: "blur", blurDataURL: item.image.asset.metadata.lqip } : {})}
-          />
+          {item.image ? (
+            <Image
+              src={urlFor(item.image).width(400).height(300).url()}
+              alt={item.image.alt || item.name}
+              width={400}
+              height={300}
+              className="w-full h-full object-cover"
+              {...(item.image.asset?.metadata?.lqip ? { placeholder: "blur", blurDataURL: item.image.asset.metadata.lqip } : {})}
+            />
+          ) : (
+            <div className="w-full h-full bg-crema-200 flex items-center justify-center text-4xl">☕</div>
+          )}
         </CardImage>
         <CardContent className="flex flex-col gap-(--space-2)">
           {item.category && (

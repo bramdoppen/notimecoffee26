@@ -72,8 +72,7 @@ function HeroSection({
             fill
             className="object-cover"
             priority
-            placeholder="blur"
-            blurDataURL={backgroundImage.asset.metadata.lqip}
+            {...(backgroundImage.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: backgroundImage.asset.metadata.lqip } : {})}
           />
         ) : null}
         {/* Overlay */}
@@ -140,8 +139,7 @@ function HeroSection({
             fill
             className="object-cover"
             priority
-            placeholder="blur"
-            blurDataURL={backgroundImage.asset.metadata.lqip}
+            {...(backgroundImage.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: backgroundImage.asset.metadata.lqip } : {})}
           />
         )}
       </div>
