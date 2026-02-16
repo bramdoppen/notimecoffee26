@@ -309,10 +309,22 @@ export const property = defineType({
       group: 'media',
     }),
     defineField({
-      name: 'floorPlanUrl',
-      title: 'Plattegrond URL',
-      type: 'url',
+      name: 'photoUrls',
+      title: "Foto URL's (Funda CDN)",
+      description: 'Raw photo URLs from pyfunda — no Sanity upload needed',
+      type: 'array',
+      of: [{ type: 'url' }],
       group: 'media',
+      readOnly: true,
+    }),
+    defineField({
+      name: 'floorPlanUrls',
+      title: 'Plattegrond URLs (Funda CDN)',
+      description: 'Raw floorplan URLs from pyfunda',
+      type: 'array',
+      of: [{ type: 'url' }],
+      group: 'media',
+      readOnly: true,
     }),
 
     // --- Source & Data Provenance ---

@@ -531,7 +531,8 @@ export type Property = {
     _type: "image";
     _key: string;
   }>;
-  floorPlanUrl?: string;
+  photoUrls?: Array<string>;
+  floorPlanUrls?: Array<string>;
   fundaUrl?: string;
   fundaId?: string;
   sourceType?: "pyfunda" | "manual" | "api_import";
@@ -846,7 +847,7 @@ export type PROPERTY_BY_SLUG_QUERYResult = {
     alt: string | null;
     category: "badkamer" | "exterieur" | "keuken" | "overig" | "plattegrond" | "slaapkamer" | "tuin" | "woonkamer" | null;
   }> | null;
-  floorPlanUrl: string | null;
+  floorPlanUrl: null;
   fundaUrl: string | null;
   fundaId: string | null;
   sourceType: "api_import" | "manual" | "pyfunda" | null;
@@ -928,7 +929,7 @@ export type PROPERTY_WITH_ANALYSIS_QUERYResult = {
     alt: string | null;
     category: "badkamer" | "exterieur" | "keuken" | "overig" | "plattegrond" | "slaapkamer" | "tuin" | "woonkamer" | null;
   }> | null;
-  floorPlanUrl: string | null;
+  floorPlanUrl: null;
   fundaUrl: string | null;
   fundaId: string | null;
   sourceType: "api_import" | "manual" | "pyfunda" | null;

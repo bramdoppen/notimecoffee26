@@ -164,6 +164,8 @@ export function mapPyfundaToProperty(listing: Record<string, any>): Record<strin
       listing.asking_price && listing.living_area
         ? Math.round(listing.asking_price / listing.living_area)
         : null,
+    photoUrls: Array.isArray(listing.photo_urls) ? listing.photo_urls : [],
+    floorPlanUrls: Array.isArray(listing.floorplan_urls) ? listing.floorplan_urls : [],
     fundaUrl: listing.url || null,
     fundaId: listing.funda_id || String(listing.id) || null,
     sourceType: 'pyfunda' as const,
