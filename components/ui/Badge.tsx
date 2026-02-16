@@ -32,7 +32,7 @@ export function Badge({
 
   return (
     <span
-      className={`inline-flex items-center font-medium ${sizeClasses} ${radiusClass} ${text} ${bg}`}
+      className={`inline-flex items-center gap-1 font-medium ${sizeClasses} ${radiusClass} ${text} ${bg}`}
     >
       {children}
     </span>

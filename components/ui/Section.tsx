@@ -17,8 +17,8 @@ interface SectionProps {
  * Collapsible section with heading, optional confidence disclaimer.
  *
  * Behavior:
- * - Desktop: always open (collapsible disabled)
- * - Mobile: collapsed by default, except when defaultOpen=true
+ * - Desktop (lg+): always open, header is a non-interactive div
+ * - Mobile (<lg): collapsed by default, header is a button toggle
  *
  * Confidence rendering (from @designer):
  * - high: nothing shown (default = trustworthy)
@@ -38,37 +38,48 @@ export function Section({
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const confidenceConfig = CONFIDENCE_UI[confidence];
 
+  const headerContent = (
+    <>
+      <h3 className="flex items-center gap-2 text-sm font-bold tracking-wide text-gray-900 uppercase">
+        {icon && <span>{icon}</span>}
+        {title}
+      </h3>
+
+      {badge && <div className="ml-1">{badge}</div>}
+
+      {/* Confidence indicator (medium only — ⓘ with tooltip) */}
+      {confidenceConfig.showIndicator && !confidenceConfig.showBanner && (
+        <span
+          className={`${confidenceConfig.text} cursor-help text-sm`}
+          title={confidenceConfig.tooltipText}
+        >
+          ⓘ
+        </span>
+      )}
+
+      <span className="flex-1" />
+    </>
+  );
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-      {/* Header — always visible */}
+      {/* Desktop: non-interactive div */}
+      <div className="hidden lg:flex items-center gap-3 px-6 py-4">
+        {headerContent}
+      </div>
+
+      {/* Mobile: interactive button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center gap-3 px-6 py-4 text-left lg:cursor-default"
+        className="flex w-full items-center gap-3 px-6 py-4 text-left lg:hidden"
         aria-expanded={isOpen}
       >
-        <h3 className="flex items-center gap-2 text-sm font-bold tracking-wide text-gray-900 uppercase">
-          {icon && <span>{icon}</span>}
-          {title}
-        </h3>
+        {headerContent}
 
-        {badge && <div className="ml-1">{badge}</div>}
-
-        {/* Confidence indicator (medium only — ⓘ with tooltip) */}
-        {confidenceConfig.showIndicator && !confidenceConfig.showBanner && (
-          <span
-            className={`${confidenceConfig.text} cursor-help text-sm`}
-            title={confidenceConfig.tooltipText}
-          >
-            ⓘ
-          </span>
-        )}
-
-        <span className="flex-1" />
-
-        {/* Chevron — mobile only */}
+        {/* Chevron */}
         <svg
-          className={`h-5 w-5 text-gray-400 transition-transform lg:hidden ${isOpen ? 'rotate-180' : ''}`}
+          className={`h-5 w-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={2}
@@ -84,8 +95,8 @@ export function Section({
 
       {/* Content — collapsible on mobile, always visible on desktop */}
       <div
-        className={`overflow-hidden transition-all duration-200 ${
-          isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 lg:max-h-none lg:opacity-100'
+        className={`overflow-hidden transition-all duration-200 lg:max-h-none lg:opacity-100 ${
+          isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         {/* Low confidence banner */}

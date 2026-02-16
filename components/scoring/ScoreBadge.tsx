@@ -7,6 +7,8 @@ interface ScoreBadgeProps {
   tier: Tier;
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
+  /** Card: 'vertical' (label below). Detail hero: 'horizontal' (label beside). */
+  layout?: 'horizontal' | 'vertical';
 }
 
 const SIZE_CLASSES = {
@@ -20,7 +22,10 @@ const SIZE_CLASSES = {
  *
  * Renders a colored circle with the numeric score inside.
  * Color is determined by tier, not by score value directly.
- * Optionally shows the tier label below (card) or beside (detail).
+ *
+ * Layout variants:
+ * - horizontal (default): label beside badge — for detail hero
+ * - vertical: label below badge — for property card
  *
  * Server component — no interactivity needed.
  */
@@ -29,11 +34,17 @@ export function ScoreBadge({
   tier,
   size = 'md',
   showLabel = false,
+  layout = 'horizontal',
 }: ScoreBadgeProps) {
   const config = TIER_UI[tier];
 
+  const containerClass =
+    layout === 'vertical'
+      ? 'flex flex-col items-center gap-1'
+      : 'flex items-center gap-2.5';
+
   return (
-    <div className="flex items-center gap-2.5">
+    <div className={containerClass}>
       <div
         className={`${SIZE_CLASSES[size]} ${config.badgeBg} rounded-full flex items-center justify-center font-bold text-white shadow-md`}
         aria-label={`Score: ${formatScore(score)} — ${config.label}`}
@@ -41,7 +52,7 @@ export function ScoreBadge({
         {formatScore(score)}
       </div>
       {showLabel && (
-        <div>
+        <div className={layout === 'vertical' ? 'text-center' : ''}>
           <div className={`text-sm font-semibold ${config.text}`}>
             {config.emoji} {config.label}
           </div>
