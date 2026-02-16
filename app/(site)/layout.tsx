@@ -34,14 +34,14 @@ export default async function SiteLayout({
       <Header
         navigation={navigation}
         logo={settings?.logo}
-        siteName={settings?.siteName ?? "No Time Coffee"}
+        siteName={settings?.siteName ?? "Aankoopmakelaar"}
         hasAnnouncement={!!announcement?.enabled}
       />
       <main className="min-h-screen">{children}</main>
       <Footer
         footerNavigation={footerNavigation}
         socialLinks={socialLinks}
-        siteName={settings?.siteName ?? "No Time Coffee"}
+        siteName={settings?.siteName ?? "Aankoopmakelaar"}
         tagline={settings?.tagline}
         footerText={settings?.footerText}
       />
