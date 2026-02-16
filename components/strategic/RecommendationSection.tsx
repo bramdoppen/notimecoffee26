@@ -47,7 +47,7 @@ export function RecommendationSection(p: RecommendationSectionProps) {
     <div>
       {/* Recommendation quote */}
       <div
-        className={`mb-6 rounded-lg px-5 py-4 ${tier.bg} border ${tier.ring.replace('ring-', 'border-')}`}
+        className={`mb-6 rounded-lg px-5 py-4 ${tier.bg} border ${tier.border}`}
       >
         <div className="mb-1 flex items-center gap-2">
           <span className="text-lg">{tier.emoji}</span>

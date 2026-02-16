@@ -15,6 +15,7 @@ import { RiskOverview } from '@/components/risk/RiskOverview';
 import { RecommendationSection } from '@/components/strategic/RecommendationSection';
 import { CONDITION_UI, type Confidence } from '@/lib/tier-config';
 import { formatCriteriaCount } from '@/lib/format';
+import { deriveBudgetStatus, deriveBudgetUtilization, deriveInvestmentRange } from '@/lib/budget';
 import type { Metadata } from 'next';
 import type { RiskLevel, BudgetStatus, Condition } from '@/lib/scoring-labels';
 
@@ -63,34 +64,19 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   const analysis = property.analysis;
 
-  // Derive budget status
-  const budgetStatus: BudgetStatus = !analysis
-    ? 'safe'
-    : !analysis.withinBudget
-      ? 'over_budget'
-      : analysis.budgetRemaining != null &&
-          analysis.totalInvestment > 0 &&
-          analysis.budgetRemaining / analysis.totalInvestment < 0.05
-        ? 'stretch'
-        : 'safe';
-
-  // Derive budget utilization
-  const budgetUtilization =
-    analysis && analysis.totalInvestment > 0
-      ? Math.round(
-          (analysis.totalInvestment /
-            (analysis.totalInvestment + (analysis.budgetRemaining ?? 0))) *
-            100,
-        )
-      : 0;
-
-  // Derive investment range
+  // Derive budget + investment from shared helpers
+  // TODO: Remove when scoring engine produces these directly
   const renoLow = analysis?.totalRenovationCostLow ?? 0;
   const renoMid = analysis?.totalRenovationCostMid ?? 0;
   const renoHigh = analysis?.totalRenovationCostHigh ?? 0;
   const totalMid = analysis?.totalInvestment ?? property.askingPrice;
-  const totalLow = totalMid - (renoMid - renoLow);
-  const totalHigh = totalMid + (renoHigh - renoMid);
+
+  const budgetInput = analysis
+    ? { totalInvestment: analysis.totalInvestment, withinBudget: analysis.withinBudget ?? null, budgetRemaining: analysis.budgetRemaining ?? null }
+    : null;
+  const budgetStatus = deriveBudgetStatus(budgetInput);
+  const budgetUtilization = deriveBudgetUtilization(budgetInput);
+  const investment = deriveInvestmentRange(totalMid, renoLow, renoMid, renoHigh);
 
   // Derive worst risk confidence for the risk section
   const worstRiskConfidence: Confidence =
@@ -120,8 +106,8 @@ export default async function PropertyDetailPage({ params }: Props) {
         matchScore={analysis?.matchScore ?? 0}
         matchTier={analysis?.tier ?? 'not_recommended'}
         recommendation={analysis?.recommendation ?? 'skip'}
-        totalInvestmentLow={totalLow}
-        totalInvestmentHigh={totalHigh}
+        totalInvestmentLow={investment.low}
+        totalInvestmentHigh={investment.high}
         budgetStatus={budgetStatus}
         budgetUtilization={budgetUtilization}
       />
@@ -254,7 +240,7 @@ export default async function PropertyDetailPage({ params }: Props) {
       )}
 
       {/* Property details sidebar — below analysis on mobile, could be sidebar on desktop later */}
-      <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-3">
+      <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {/* Features */}
         {property.features && property.features.length > 0 && (
           <div className="rounded-xl border border-gray-200 bg-white p-5">

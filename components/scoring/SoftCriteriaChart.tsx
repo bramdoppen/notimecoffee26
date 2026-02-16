@@ -83,10 +83,15 @@ export function SoftCriteriaChart({
                   />
                 </div>
 
-                {/* Score */}
+                {/* Score + expand hint */}
                 <span className="w-12 flex-shrink-0 text-right text-sm font-semibold text-gray-900">
                   {r.score}
                 </span>
+                {r.reasoning && (
+                  <span className="w-4 flex-shrink-0 text-center text-xs text-gray-300">
+                    {expanded === r.criterion ? '▾' : '▸'}
+                  </span>
+                )}
               </div>
             </button>
 

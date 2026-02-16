@@ -63,13 +63,18 @@ export function PropertyHero(p: PropertyHeroProps) {
       </Link>
 
       {/* Photo */}
-      {p.imageUrl && (
-        <div className="mb-6 aspect-[21/9] overflow-hidden rounded-xl bg-gray-100">
+      {p.imageUrl ? (
+        <div className="mb-6 aspect-[16/9] overflow-hidden rounded-xl bg-gray-100 md:aspect-[21/9]">
           <img
             src={p.imageUrl}
             alt={p.address}
             className="h-full w-full object-cover"
           />
+        </div>
+      ) : (
+        <div className="mb-6 flex aspect-[16/9] flex-col items-center justify-center gap-1 rounded-xl bg-gray-100 md:aspect-[21/9]">
+          <span className="text-4xl text-gray-300">🏠</span>
+          <span className="text-xs text-gray-300">Geen foto beschikbaar</span>
         </div>
       )}
 

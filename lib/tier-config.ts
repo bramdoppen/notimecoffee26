@@ -37,6 +37,7 @@ interface TierUIConfig {
   readonly text: string; // Tailwind text color class
   readonly bg: string; // Tailwind background class
   readonly ring: string; // Tailwind ring class (for focus/selection)
+  readonly border: string; // Tailwind border color class
   readonly badgeBg: string; // Solid background for score circle
   readonly sort: number; // Sort order (0 = best)
 }
@@ -47,6 +48,7 @@ export const TIER_UI: Record<Tier, TierUIConfig> = {
     text: 'text-emerald-700',
     bg: 'bg-emerald-50',
     ring: 'ring-emerald-200',
+    border: 'border-emerald-200',
     badgeBg: 'bg-emerald-600',
     sort: 0,
   },
@@ -55,6 +57,7 @@ export const TIER_UI: Record<Tier, TierUIConfig> = {
     text: 'text-blue-700',
     bg: 'bg-blue-50',
     ring: 'ring-blue-200',
+    border: 'border-blue-200',
     badgeBg: 'bg-blue-600',
     sort: 1,
   },
@@ -63,6 +66,7 @@ export const TIER_UI: Record<Tier, TierUIConfig> = {
     text: 'text-amber-700',
     bg: 'bg-amber-50',
     ring: 'ring-amber-200',
+    border: 'border-amber-200',
     badgeBg: 'bg-amber-600',
     sort: 2,
   },
@@ -71,6 +75,7 @@ export const TIER_UI: Record<Tier, TierUIConfig> = {
     text: 'text-red-700',
     bg: 'bg-red-50',
     ring: 'ring-red-200',
+    border: 'border-red-200',
     badgeBg: 'bg-red-600',
     sort: 3,
   },
@@ -79,6 +84,7 @@ export const TIER_UI: Record<Tier, TierUIConfig> = {
     text: 'text-gray-600',
     bg: 'bg-gray-100',
     ring: 'ring-gray-300',
+    border: 'border-gray-300',
     badgeBg: 'bg-gray-500',
     sort: 4,
   },

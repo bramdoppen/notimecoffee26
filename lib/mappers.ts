@@ -16,7 +16,8 @@
  */
 
 import type { PropertySummary, RiskFlag } from '@/lib/types';
-import type { RiskLevel, BudgetStatus, Condition } from '@/lib/scoring-labels';
+import type { RiskLevel, Condition } from '@/lib/scoring-labels';
+import { deriveBudgetStatus, deriveBudgetUtilization, deriveInvestmentRange } from '@/lib/budget';
 
 // ---------------------------------------------------------------------------
 // Raw Sanity types (temporary — replace with sanity.types.ts imports)
@@ -139,12 +140,11 @@ function mapPropertyToSummary(
   const renoMid = analysis?.totalRenovationCostMid ?? 0;
   const renoHigh = analysis?.totalRenovationCostHigh ?? 0;
   const totalMid = analysis?.totalInvestment ?? prop.askingPrice;
+  const investment = deriveInvestmentRange(totalMid, renoLow, renoMid, renoHigh);
 
-  // Investment range: mid ± renovation spread
-  const renoSpreadLow = renoMid - renoLow;
-  const renoSpreadHigh = renoHigh - renoMid;
-  const totalLow = totalMid - renoSpreadLow;
-  const totalHigh = totalMid + renoSpreadHigh;
+  const budgetInput = analysis
+    ? { totalInvestment: analysis.totalInvestment, withinBudget: analysis.withinBudget ?? null, budgetRemaining: analysis.budgetRemaining ?? null }
+    : null;
 
   return {
     id: prop._id,
@@ -166,11 +166,11 @@ function mapPropertyToSummary(
     matchScore: analysis?.matchScore ?? 0,
     matchTier: (analysis?.tier as PropertySummary['matchTier']) ?? 'not_recommended',
     recommendation: (analysis?.recommendation as PropertySummary['recommendation']) ?? 'skip',
-    totalInvestmentLow: totalLow,
-    totalInvestmentMid: totalMid,
-    totalInvestmentHigh: totalHigh,
-    budgetStatus: deriveBudgetStatus(analysis),
-    budgetUtilization: deriveBudgetUtilization(analysis),
+    totalInvestmentLow: investment.low,
+    totalInvestmentMid: investment.mid,
+    totalInvestmentHigh: investment.high,
+    budgetStatus: deriveBudgetStatus(budgetInput),
+    budgetUtilization: deriveBudgetUtilization(budgetInput),
     overallRisk: (analysis?.overallRiskLevel as RiskLevel) ?? 'low',
     dealbreakers: analysis?.dealbreakers ?? [],
     topRiskFlags: deriveTopRiskFlags(analysis?.risks ?? []),
@@ -188,9 +188,13 @@ function mapAnalysisToSummary(analysis: RawAnalysis): PropertySummary | null {
   const renoLow = analysis.totalRenovationCostLow ?? 0;
   const renoMid = analysis.totalRenovationCostMid ?? 0;
   const renoHigh = analysis.totalRenovationCostHigh ?? 0;
-  const totalMid = analysis.totalInvestment;
-  const renoSpreadLow = renoMid - renoLow;
-  const renoSpreadHigh = renoHigh - renoMid;
+  const investment = deriveInvestmentRange(analysis.totalInvestment, renoLow, renoMid, renoHigh);
+
+  const budgetInput = {
+    totalInvestment: analysis.totalInvestment,
+    withinBudget: analysis.withinBudget ?? null,
+    budgetRemaining: analysis.budgetRemaining ?? null,
+  };
 
   return {
     id: prop._id,
@@ -212,11 +216,11 @@ function mapAnalysisToSummary(analysis: RawAnalysis): PropertySummary | null {
     matchScore: analysis.matchScore,
     matchTier: analysis.tier as PropertySummary['matchTier'],
     recommendation: analysis.recommendation as PropertySummary['recommendation'],
-    totalInvestmentLow: totalMid - renoSpreadLow,
-    totalInvestmentMid: totalMid,
-    totalInvestmentHigh: totalMid + renoSpreadHigh,
-    budgetStatus: deriveBudgetStatus(analysis),
-    budgetUtilization: deriveBudgetUtilization(analysis),
+    totalInvestmentLow: investment.low,
+    totalInvestmentMid: investment.mid,
+    totalInvestmentHigh: investment.high,
+    budgetStatus: deriveBudgetStatus(budgetInput),
+    budgetUtilization: deriveBudgetUtilization(budgetInput),
     overallRisk: analysis.overallRiskLevel as RiskLevel,
     dealbreakers: analysis.dealbreakers ?? [],
     topRiskFlags: deriveTopRiskFlags(analysis.risks ?? []),
@@ -250,22 +254,4 @@ function deriveTopRiskFlags(
     }));
 }
 
-function deriveBudgetStatus(analysis: RawAnalysis | null): BudgetStatus {
-  if (!analysis) return 'safe';
-  if (!analysis.withinBudget) return 'over_budget';
-  // Stretch = within budget but less than 5% remaining
-  const remaining = analysis.budgetRemaining ?? 0;
-  const total = analysis.totalInvestment;
-  if (total > 0 && remaining / total < 0.05) return 'stretch';
-  return 'safe';
-}
-
-function deriveBudgetUtilization(analysis: RawAnalysis | null): number {
-  if (!analysis) return 0;
-  // Without maxBudget from searchProfile, approximate from withinBudget + remaining
-  const total = analysis.totalInvestment;
-  const remaining = analysis.budgetRemaining ?? 0;
-  const maxBudget = total + remaining;
-  if (maxBudget <= 0) return 0;
-  return Math.round((total / maxBudget) * 100);
-}
+// Budget derivation functions moved to lib/budget.ts (shared with detail page)
