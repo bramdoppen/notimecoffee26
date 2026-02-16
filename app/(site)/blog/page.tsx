@@ -1,16 +1,27 @@
+import { Suspense } from "react";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { BLOG_POSTS_QUERY } from "@/sanity/lib/queries";
-import { BlogCard } from "@/components/ui/blog-card";
+import { FeaturedPost } from "@/components/blog/featured-post";
+import { BlogListing } from "@/components/blog/blog-listing";
+import { BlogNewsletterCta } from "@/components/blog/blog-newsletter-cta";
 import type { Metadata } from "next";
 
+// TODO: Replace with generated types once @grind runs sanity typegen generate
+type BlogPostsQueryResult = any[];
+
 export const metadata: Metadata = {
-  title: "Blog",
+  title: "Stories",
   description:
-    "Stories, recipes, and coffee culture from No Time Coffee.",
+    "Brewing guides, origin stories, and life behind the bar at No Time Coffee.",
 };
 
-export default async function BlogPage() {
-  const posts = await sanityFetch<any[]>({
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const params = await searchParams;
+  const posts = await sanityFetch<BlogPostsQueryResult>({
     query: BLOG_POSTS_QUERY,
     tags: ["blogPost"],
   });
@@ -21,18 +32,18 @@ export default async function BlogPage() {
         <section className="bg-crema-100 pt-(--space-16) pb-(--space-8)">
           <div className="container-site">
             <h1 className="font-display text-4xl lg:text-5xl text-espresso-600">
-              Blog
+              Stories
             </h1>
             <p className="mt-(--space-2) text-lg text-stone">
-              Stories, recipes, and coffee culture.
+              Brewing guides, origin stories, and life behind the bar.
             </p>
           </div>
         </section>
         <section className="py-(--space-16)">
           <div className="container-site text-center">
-            <p className="text-4xl mb-(--space-4)">✍️</p>
+            <p className="text-4xl mb-(--space-4)">☕</p>
             <p className="text-lg text-stone">
-              No posts yet. Add blog posts in Sanity Studio.
+              Stories are brewing. Check back soon!
             </p>
           </div>
         </section>
@@ -40,30 +51,46 @@ export default async function BlogPage() {
     );
   }
 
+  // Featured post: most recent post (already sorted by publishedAt desc)
+  const featuredPost = posts[0];
+  // Remaining posts for the grid (exclude featured)
+  const remainingPosts = posts.slice(1);
+
   return (
     <main>
       {/* Page header */}
       <section className="bg-crema-100 pt-(--space-16) pb-(--space-8)">
         <div className="container-site">
           <h1 className="font-display text-4xl lg:text-5xl text-espresso-600">
-            Blog
+            Stories
           </h1>
           <p className="mt-(--space-2) text-lg text-stone">
-            Stories, recipes, and coffee culture.
+            Brewing guides, origin stories, and life behind the bar.
           </p>
         </div>
       </section>
 
-      {/* Post grid */}
+      {/* Featured post hero */}
       <section className="py-(--space-8)">
         <div className="container-site">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-(--space-6)">
-            {posts.map((post: any) => (
-              <BlogCard key={post._id} post={post} />
-            ))}
-          </div>
+          <FeaturedPost post={featuredPost} />
         </div>
       </section>
+
+      {/* Category filter + post grid + load more */}
+      {remainingPosts.length > 0 && (
+        <section className="py-(--space-8)">
+          <Suspense fallback={null}>
+            <BlogListing
+              posts={remainingPosts}
+              initialCategory={params.category ?? null}
+            />
+          </Suspense>
+        </section>
+      )}
+
+      {/* Newsletter CTA — dark variant (client component for form) */}
+      <BlogNewsletterCta />
     </main>
   );
 }
