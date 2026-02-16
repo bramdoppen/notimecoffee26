@@ -63,11 +63,11 @@ export const propertyAnalysis = defineType({
       type: 'string',
       options: {
         list: [
-          { title: '🏆 Topmatch', value: 'top_match' },
-          { title: '👍 Goede match', value: 'good_match' },
-          { title: '🤔 Redelijke match', value: 'reasonable_match' },
-          { title: '👎 Slechte match', value: 'poor_match' },
-          { title: '🚫 Niet geschikt', value: 'not_suitable' },
+          { title: '⭐ Topmatch', value: 'excellent' },
+          { title: '🟢 Goede match', value: 'strong' },
+          { title: '🟡 Redelijk', value: 'moderate' },
+          { title: '🟠 Zwak', value: 'weak' },
+          { title: '🔴 Niet aanbevolen', value: 'not_recommended' },
         ],
       },
       validation: (rule) => rule.required(),
@@ -595,15 +595,15 @@ export const propertyAnalysis = defineType({
     },
     prepare({ address, city, score, tier, analyzedAt }) {
       const tierEmoji =
-        tier === 'top_match'
-          ? '🏆'
-          : tier === 'good_match'
-            ? '👍'
-            : tier === 'reasonable_match'
-              ? '🤔'
-              : tier === 'poor_match'
-                ? '👎'
-                : '🚫';
+        tier === 'excellent'
+          ? '⭐'
+          : tier === 'strong'
+            ? '🟢'
+            : tier === 'moderate'
+              ? '🟡'
+              : tier === 'weak'
+                ? '🟠'
+                : '🔴';
       const date = analyzedAt
         ? new Date(analyzedAt).toLocaleDateString('nl-NL')
         : '';

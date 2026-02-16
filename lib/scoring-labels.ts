@@ -10,11 +10,11 @@
 // ---------------------------------------------------------------------------
 
 export const TIER_LABELS = {
-  top_match: 'Topmatch',
-  good_match: 'Goede match',
-  reasonable_match: 'Redelijke match',
-  poor_match: 'Slechte match',
-  not_suitable: 'Niet geschikt',
+  excellent:       { label: 'Top Match',       emoji: '⭐' },
+  strong:          { label: 'Goede Match',     emoji: '🟢' },
+  moderate:        { label: 'Redelijk',        emoji: '🟡' },
+  weak:            { label: 'Zwak',            emoji: '🟠' },
+  not_recommended: { label: 'Niet Aanbevolen', emoji: '🔴' },
 } as const;
 
 export type Tier = keyof typeof TIER_LABELS;
@@ -24,10 +24,10 @@ export type Tier = keyof typeof TIER_LABELS;
 // ---------------------------------------------------------------------------
 
 export const RECOMMENDATION_LABELS = {
-  visit_immediately: 'Direct bezichtigen',
-  worth_visiting: 'Bezichtigen',
-  needs_research: 'Nader onderzoek',
-  skip: 'Overslaan',
+  visit_immediately: { label: 'Direct bezichtigen', emoji: '🏃' },
+  worth_visiting:    { label: 'Bezichtigen',        emoji: '👀' },
+  needs_research:    { label: 'Nader onderzoek',    emoji: '🔍' },
+  skip:              { label: 'Overslaan',          emoji: '⏭️' },
 } as const;
 
 export type Recommendation = keyof typeof RECOMMENDATION_LABELS;
@@ -70,6 +70,18 @@ export const RISK_LEVEL_LABELS = {
 } as const;
 
 export type RiskLevel = keyof typeof RISK_LEVEL_LABELS;
+
+// ---------------------------------------------------------------------------
+// Budget Status Labels
+// ---------------------------------------------------------------------------
+
+export const BUDGET_STATUS_LABELS = {
+  safe: 'Binnen budget',
+  stretch: 'Stretch budget',
+  over_budget: 'Over budget',
+} as const;
+
+export type BudgetStatus = keyof typeof BUDGET_STATUS_LABELS;
 
 // ---------------------------------------------------------------------------
 // Scoring Thresholds (defaults — can be overridden in UserPreferences)
