@@ -4,8 +4,7 @@ import { StoreLocator } from "@/components/map/store-locator";
 import { StoreCard } from "@/components/ui/store-card";
 import type { Metadata } from "next";
 
-// TODO: Replace with generated types once @grind runs sanity typegen generate
-type StoresQueryResult = any[];
+import type { STORES_QUERYResult } from "@/sanity/types";
 
 export const metadata: Metadata = {
   title: "Our Locations",
@@ -14,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LocationsPage() {
-  const stores = await sanityFetch<StoresQueryResult>({
+  const stores = await sanityFetch<STORES_QUERYResult>({
     query: STORES_QUERY,
     tags: ["store"],
   });
@@ -66,7 +65,7 @@ export default async function LocationsPage() {
         <section className="py-(--space-8)">
           <div className="container-site">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-(--space-6)">
-              {stores.map((store: any) => (
+              {stores.map((store) => (
                 <StoreCard key={store._id} store={store} variant="full" />
               ))}
             </div>

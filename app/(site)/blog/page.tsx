@@ -6,8 +6,7 @@ import { BlogListing } from "@/components/blog/blog-listing";
 import { BlogNewsletterCta } from "@/components/blog/blog-newsletter-cta";
 import type { Metadata } from "next";
 
-// TODO: Replace with generated types once @grind runs sanity typegen generate
-type BlogPostsQueryResult = any[];
+import type { BLOG_POSTS_QUERYResult } from "@/sanity/types";
 
 export const metadata: Metadata = {
   title: "Stories",
@@ -21,7 +20,7 @@ export default async function BlogPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const params = await searchParams;
-  const posts = await sanityFetch<BlogPostsQueryResult>({
+  const posts = await sanityFetch<BLOG_POSTS_QUERYResult>({
     query: BLOG_POSTS_QUERY,
     tags: ["blogPost"],
   });

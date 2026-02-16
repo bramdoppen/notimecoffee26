@@ -16,35 +16,9 @@ import "leaflet/dist/leaflet.css";
 // Types
 // ---------------------------------------------------------------------------
 
-type StoreCoordinates = {
-  lat: number;
-  lng: number;
-};
+import type { STORES_QUERYResult } from "@/sanity/types";
 
-type StoreHours = {
-  day: string;
-  open: string;
-  close: string;
-  closed?: boolean;
-};
-
-export type MapStore = {
-  _id: string;
-  name: string;
-  slug: { current: string };
-  city: string;
-  address: string;
-  zipCode?: string;
-  coordinates: StoreCoordinates;
-  phone?: string;
-  hours?: StoreHours[];
-  // StoreCard requires these — pass through from STORES_QUERY
-  image?: any;
-  specialHours?: any[];
-  features?: string[];
-  email?: string;
-  [key: string]: any; // Allow additional fields from query
-};
+export type MapStore = STORES_QUERYResult[number];
 
 type StoreMapProps = {
   stores: MapStore[];
@@ -122,7 +96,7 @@ function MapController({
   useEffect(() => {
     if (selectedStoreId) {
       const store = stores.find((s) => s._id === selectedStoreId);
-      if (store?.coordinates) {
+      if (store?.coordinates?.lat != null && store?.coordinates?.lng != null) {
         map.flyTo(
           [store.coordinates.lat, store.coordinates.lng],
           FLY_TO_ZOOM,
@@ -132,7 +106,9 @@ function MapController({
     } else {
       // No selection — fit all markers
       const bounds = stores
-        .filter((s) => s.coordinates)
+        .filter((s): s is typeof s & { coordinates: { lat: number; lng: number } } =>
+          s.coordinates?.lat != null && s.coordinates?.lng != null
+        )
         .map((s) => [s.coordinates.lat, s.coordinates.lng] as L.LatLngTuple);
       if (bounds.length > 0) {
         map.flyToBounds(bounds, { padding: [50, 50], duration: 0.8 });
@@ -147,7 +123,7 @@ function MapController({
 // Open/closed status for popup
 // ---------------------------------------------------------------------------
 
-function getStoreStatus(hours?: StoreHours[]): {
+function getStoreStatus(hours?: MapStore["hours"]): {
   label: string;
   color: string;
   dot: string;
@@ -171,7 +147,7 @@ function getStoreStatus(hours?: StoreHours[]): {
     (h) => h.day.toLowerCase() === today
   );
 
-  if (!todayHours || todayHours.closed) {
+  if (!todayHours || todayHours.closed || !todayHours.open || !todayHours.close) {
     return { label: "Closed today", color: "#dc2626", dot: "🔴" };
   }
 
@@ -251,15 +227,17 @@ export function StoreMap({
 
       {/* Store markers */}
       {stores.map((store) => {
-        if (!store.coordinates) return null;
+        const lat = store.coordinates?.lat;
+        const lng = store.coordinates?.lng;
+        if (lat == null || lng == null) return null;
         const isActive = store._id === selectedStoreId;
         const status = getStoreStatus(store.hours);
-        const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${store.coordinates.lat},${store.coordinates.lng}`;
+        const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
         return (
           <Marker
             key={store._id}
-            position={[store.coordinates.lat, store.coordinates.lng]}
+            position={[lat, lng]}
             icon={createMarkerIcon(store.city, isActive)}
             ref={setMarkerRef(store._id)}
             eventHandlers={{

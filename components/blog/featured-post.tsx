@@ -1,20 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { urlFor } from "@/sanity/lib/image";
+import type { BLOG_POSTS_QUERYResult } from "@/sanity/types";
 
 type FeaturedPostProps = {
-  post: {
-    title: string;
-    slug: { current: string };
-    author: string;
-    publishedAt: string;
-    excerpt: string;
-    categories?: string[];
-    mainImage?: {
-      asset: { _id: string; url: string; metadata: { lqip: string; dimensions: { width: number; height: number } } };
-      alt?: string;
-    };
-  };
+  post: BLOG_POSTS_QUERYResult[number];
 };
 
 function formatDate(dateString: string): string {
@@ -40,8 +30,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
               alt={post.mainImage.alt || post.title}
               fill
               className="object-cover group-hover:scale-[1.03] transition-transform duration-300"
-              placeholder="blur"
-              blurDataURL={post.mainImage.asset.metadata.lqip}
+            {...(post.mainImage.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: post.mainImage.asset.metadata.lqip } : {})}
               sizes="(max-width: 1024px) 100vw, 55vw"
               priority
             />

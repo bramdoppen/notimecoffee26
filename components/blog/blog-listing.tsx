@@ -5,21 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { BlogCard } from "@/components/ui/blog-card";
 import { BlogCategoryFilter } from "./blog-category-filter";
 import { Button } from "@/components/ui/button";
+import type { BLOG_POSTS_QUERYResult } from "@/sanity/types";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type BlogPost = {
-  _id: string;
-  title: string;
-  slug: { current: string };
-  author: string;
-  publishedAt: string;
-  excerpt: string;
-  categories?: string[];
-  mainImage?: any;
-};
+type BlogPost = BLOG_POSTS_QUERYResult[number];
 
 type BlogListingProps = {
   /** All posts (excluding featured post if shown separately) */
