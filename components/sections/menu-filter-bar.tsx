@@ -3,14 +3,9 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import type { PRODUCT_CATEGORIES_QUERYResult } from "@/sanity/types";
 
-type Category = {
-  _id: string;
-  name: string;
-  slug: { current: string };
-  icon?: string;
-  sortOrder: number;
-};
+type Category = PRODUCT_CATEGORIES_QUERYResult[number];
 
 type MenuFilterBarProps = {
   categories: Category[];

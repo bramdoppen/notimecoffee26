@@ -4,88 +4,33 @@ import { urlFor } from "@/sanity/lib/image";
 import { Card } from "./card";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
+import type { STORES_QUERYResult } from "@/sanity/types";
 
-type StoreHours = {
-  day: string;
-  open: string;
-  close: string;
-  closed: boolean;
-};
-
-type SpecialHoursEntry = {
-  date: string;
-  label: string;
-  open?: string;
-  close?: string;
-  closed: boolean;
-};
+type StoreHours = STORES_QUERYResult[number]["hours"][number];
 
 type StoreStatus = {
   isOpen: boolean;
   closingSoon: boolean;
-  todayHours: { open: string; close: string; closed: boolean } | null;
+  todayHours: StoreHours | null;
   specialHoursLabel?: string;
 };
 
 type StoreCardProps = {
-  store: {
-    name: string;
-    slug: { current: string };
-    city: string;
-    address: string;
-    hours: StoreHours[];
-    specialHours?: SpecialHoursEntry[];
-    image: {
-      asset: { _id: string; url: string; metadata: { lqip: string; dimensions: { width: number; height: number } } };
-      alt?: string;
-      hotspot?: { x: number; y: number };
-      crop?: { top: number; bottom: number; left: number; right: number };
-    };
-    coordinates?: { lat: number; lng: number };
-  };
+  store: STORES_QUERYResult[number];
   variant?: "full" | "compact";
   className?: string;
 };
 
 const CLOSING_SOON_MINUTES = 30;
 
-function getStoreStatus(
-  hours: StoreHours[],
-  specialHours?: SpecialHoursEntry[]
-): StoreStatus {
+function getStoreStatus(hours: StoreHours[]): StoreStatus {
   const now = new Date();
-  const todayStr = now.toISOString().split("T")[0];
 
-  // Check special hours FIRST — they override regular hours
-  const specialToday = specialHours?.find((sh) => sh.date === todayStr);
-  if (specialToday) {
-    if (specialToday.closed) {
-      return {
-        isOpen: false,
-        closingSoon: false,
-        todayHours: { open: "", close: "", closed: true },
-        specialHoursLabel: specialToday.label,
-      };
-    }
-    if (specialToday.open && specialToday.close) {
-      const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-      const isOpen = currentTime >= specialToday.open && currentTime < specialToday.close;
-      const closingSoon = isOpen && isClosingSoon(now, specialToday.close);
-      return {
-        isOpen,
-        closingSoon,
-        todayHours: { open: specialToday.open, close: specialToday.close, closed: false },
-        specialHoursLabel: specialToday.label,
-      };
-    }
-  }
-
-  // Fall back to regular hours
   const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   const dayName = days[now.getDay()];
   const todayHours = hours.find((h) => h.day === dayName) ?? null;
 
-  if (!todayHours || todayHours.closed) {
+  if (!todayHours || todayHours.closed || !todayHours.open || !todayHours.close) {
     return { isOpen: false, closingSoon: false, todayHours };
   }
 
@@ -107,22 +52,19 @@ function formatHoursRange(hours: StoreHours[]): string[] {
   const weekend = hours.find((h) => h.day === "saturday");
 
   const lines: string[] = [];
-  if (weekday && !weekday.closed) {
+  if (weekday && !weekday.closed && weekday.open && weekday.close) {
     lines.push(`Mon-Fri ${weekday.open}–${weekday.close}`);
   }
-  if (weekend && !weekend.closed) {
+  if (weekend && !weekend.closed && weekend.open && weekend.close) {
     lines.push(`Sat-Sun ${weekend.open}–${weekend.close}`);
   }
   return lines;
 }
 
 function StoreCard({ store, variant = "full", className }: StoreCardProps) {
-  const { isOpen, closingSoon, todayHours, specialHoursLabel } = getStoreStatus(
-    store.hours,
-    store.specialHours
-  );
+  const { isOpen, closingSoon, todayHours, specialHoursLabel } = getStoreStatus(store.hours);
   const hoursLines = formatHoursRange(store.hours);
-  const directionsUrl = store.coordinates
+  const directionsUrl = store.coordinates?.lat != null && store.coordinates?.lng != null
     ? `https://www.google.com/maps/dir/?api=1&destination=${store.coordinates.lat},${store.coordinates.lng}`
     : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.address + " " + store.city)}`;
 
@@ -148,8 +90,7 @@ function StoreCard({ store, variant = "full", className }: StoreCardProps) {
           width={500}
           height={375}
           className="w-full h-full object-cover"
-          placeholder="blur"
-          blurDataURL={store.image.asset.metadata.lqip}
+          {...(store.image.asset?.metadata?.lqip ? { placeholder: "blur" as const, blurDataURL: store.image.asset.metadata.lqip } : {})}
         />
       </div>
       <div className={cn("p-(--space-4) flex flex-col gap-(--space-2)", variant === "full" && "lg:flex-1")}>
@@ -184,7 +125,7 @@ function StoreCard({ store, variant = "full", className }: StoreCardProps) {
               : isOpen
                 ? "Open now"
                 : "Closed"}
-            {todayHours && !todayHours.closed && (
+            {todayHours && !todayHours.closed && todayHours.open && todayHours.close && (
               <span className="text-pebble">
                 {" "}· {isOpen ? `until ${todayHours.close}` : `opens ${todayHours.open}`}
               </span>

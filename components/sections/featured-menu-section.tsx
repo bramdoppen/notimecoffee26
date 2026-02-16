@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { FEATURED_PRODUCTS_QUERY } from "@/sanity/lib/queries";
-// TODO: Replace with generated types once @grind runs `sanity typegen generate`
-type FeaturedProductsQueryResult = any[];
+import type { FEATURED_PRODUCTS_QUERYResult } from "@/sanity/types";
 import { ProductCard } from "@/components/ui/product-card";
 import { Button } from "@/components/ui/button";
 
@@ -11,7 +10,7 @@ type FeaturedMenuSectionProps = {
   description?: string;
   autoFeatured: boolean;
   maxItems?: number;
-  items?: FeaturedProductsQueryResult;
+  items?: FEATURED_PRODUCTS_QUERYResult;
 };
 
 async function FeaturedMenuSection({
@@ -22,7 +21,7 @@ async function FeaturedMenuSection({
   items: manualItems,
 }: FeaturedMenuSectionProps) {
   const items = autoFeatured
-    ? await sanityFetch<FeaturedProductsQueryResult>({
+    ? await sanityFetch<FEATURED_PRODUCTS_QUERYResult>({
         query: FEATURED_PRODUCTS_QUERY,
         params: { limit: maxItems },
         tags: ["product"],

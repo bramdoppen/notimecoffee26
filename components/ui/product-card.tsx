@@ -3,28 +3,10 @@ import Link from "next/link";
 import { urlFor } from "@/sanity/lib/image";
 import { Card, CardImage, CardContent } from "./card";
 import { cn } from "@/lib/utils";
+import type { PRODUCTS_QUERYResult, FEATURED_PRODUCTS_QUERYResult } from "@/sanity/types";
 
 type ProductCardProps = {
-  item: {
-    name: string;
-    slug: { current: string };
-    description?: string;
-    price: number;
-    priceVariants?: Array<{ label: string; price: number }>;
-    image: {
-      asset: { _id: string; url: string; metadata: { lqip: string; dimensions: { width: number; height: number } } };
-      alt?: string;
-      hotspot?: { x: number; y: number };
-      crop?: { top: number; bottom: number; left: number; right: number };
-    };
-    category?: {
-      name: string;
-      slug: { current: string };
-      icon?: string;
-    };
-    allergens?: string[];
-    dietaryFlags?: string[];
-  };
+  item: PRODUCTS_QUERYResult[number] | FEATURED_PRODUCTS_QUERYResult[number];
   className?: string;
 };
 
@@ -39,8 +21,7 @@ function ProductCard({ item, className }: ProductCardProps) {
             width={400}
             height={300}
             className="w-full h-full object-cover"
-            placeholder="blur"
-            blurDataURL={item.image.asset.metadata.lqip}
+            {...(item.image.asset?.metadata?.lqip ? { placeholder: "blur", blurDataURL: item.image.asset.metadata.lqip } : {})}
           />
         </CardImage>
         <CardContent className="flex flex-col gap-(--space-2)">
@@ -68,9 +49,9 @@ function ProductCard({ item, className }: ProductCardProps) {
               </span>
             )}
           </div>
-          {item.dietaryFlags && item.dietaryFlags.length > 0 && (
+          {"dietaryFlags" in item && item.dietaryFlags && item.dietaryFlags.length > 0 && (
             <div className="flex gap-1 flex-wrap">
-              {item.dietaryFlags.map((flag) => (
+              {item.dietaryFlags.map((flag: string) => (
                 <span
                   key={flag}
                   className="text-xs text-forest-600 bg-forest-50 px-1.5 py-0.5 rounded-(--radius-sm)"

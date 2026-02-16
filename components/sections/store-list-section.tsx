@@ -1,7 +1,6 @@
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { STORES_QUERY } from "@/sanity/lib/queries";
-// TODO: Replace with generated types once @grind runs `sanity typegen generate`
-type StoresQueryResult = any[];
+import type { STORES_QUERYResult } from "@/sanity/types";
 import { StoreCard } from "@/components/ui/store-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -15,7 +14,7 @@ async function StoreListSection({
   heading = "Find Us",
   showMap = true,
 }: StoreListSectionProps) {
-  const stores = await sanityFetch<StoresQueryResult>({
+  const stores = await sanityFetch<STORES_QUERYResult>({
     query: STORES_QUERY,
     tags: ["store"],
   });
