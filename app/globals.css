@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+/* ============================================
+   NoTimeCoffee — Design Tokens
+   Tailwind v4 CSS Custom Properties
+   ============================================ */
+
+@theme {
+  /* --- Colors: Primary (Forest) --- */
+  --color-forest-50: #f0f7ec;
+  --color-forest-100: #dcefd3;
+  --color-forest-200: #b8dfaa;
+  --color-forest-300: #8bc878;
+  --color-forest-400: #5fa94d;
+  --color-forest-500: #3A6B1E;
+  --color-forest-600: #2D5016;
+  --color-forest-700: #1E3A0E;
+  --color-forest-800: #142808;
+  --color-forest-900: #0B1604;
+
+  /* --- Colors: Secondary (Espresso) --- */
+  --color-espresso-50: #faf6f3;
+  --color-espresso-100: #f0e6dd;
+  --color-espresso-200: #dcc8b5;
+  --color-espresso-300: #c2a285;
+  --color-espresso-400: #9b7458;
+  --color-espresso-500: #5C3D2E;
+  --color-espresso-600: #3C2415;
+  --color-espresso-700: #2D1A0F;
+  --color-espresso-800: #1E110A;
+  --color-espresso-900: #0F0905;
+
+  /* --- Colors: Warm Neutral (Crema) --- */
+  --color-crema-50: #FEFCF9;
+  --color-crema-100: #FBF4EC;
+  --color-crema-200: #F5E6D3;
+  --color-crema-300: #EDD5B8;
+  --color-crema-400: #E0BE96;
+  --color-crema-500: #D4A674;
+
+  /* --- Colors: Accent (Terracotta) --- */
+  --color-terracotta-50: #fef5ef;
+  --color-terracotta-100: #fce8d8;
+  --color-terracotta-200: #f5cba8;
+  --color-terracotta-300: #e8a46e;
+  --color-terracotta-400: #D4854A;
+  --color-terracotta-500: #C4652A;
+  --color-terracotta-600: #a34f1e;
+  --color-terracotta-700: #7d3c17;
+  --color-terracotta-800: #5a2b10;
+  --color-terracotta-900: #371a0a;
+
+  /* --- Colors: Accent (Sage) --- */
+  --color-sage-50: #f4f8f3;
+  --color-sage-100: #e5efe3;
+  --color-sage-200: #cddfc9;
+  --color-sage-300: #B5CCAF;
+  --color-sage-400: #8BA888;
+  --color-sage-500: #6B8E68;
+  --color-sage-600: #4F6F4C;
+  --color-sage-700: #3A5237;
+  --color-sage-800: #263623;
+  --color-sage-900: #131B12;
+
+  /* --- Colors: Neutrals --- */
+  --color-charcoal: #2A2A2A;
+  --color-stone: #6B6B6B;
+  --color-pebble: #A3A3A3;
+  --color-mist: #E8E8E8;
+  --color-cloud: #F5F5F5;
+
+  /* --- Colors: Semantic --- */
+  --color-success: #2D7A3A;
+  --color-warning: #C4652A;
+  --color-error: #B83232;
+
+  /* --- Typography --- */
+  --font-display: "DM Serif Display", Georgia, serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* --- Border Radius --- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* --- Shadows (forest-tinted) --- */
+  --shadow-sm: 0 1px 2px rgba(44, 80, 22, 0.06);
+  --shadow-md: 0 4px 12px rgba(44, 80, 22, 0.08);
+  --shadow-lg: 0 8px 24px rgba(44, 80, 22, 0.12);
+  --shadow-xl: 0 16px 48px rgba(44, 80, 22, 0.16);
+
+  /* --- Transitions --- */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* --- Layout --- */
+  --max-width: 1280px;
+  --header-height: 4rem;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+    color: var(--color-charcoal);
+    background-color: var(--color-crema-50);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--color-espresso-600);
+  }
+
+  h3, h4, h5, h6 {
+    font-family: var(--font-body);
+    font-weight: 500;
+    color: var(--color-espresso-600);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-forest-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  ::selection {
+    background-color: var(--color-sage-200);
+    color: var(--color-forest-700);
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+@utility container-site {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
