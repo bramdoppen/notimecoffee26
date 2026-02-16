@@ -1350,50 +1350,8 @@ export type PAGE_BY_SLUG_QUERYResult = {
   seo: SeoFields | null;
 } | null;
 // Variable: SITE_SETTINGS_QUERY
-// Query: *[  _id == "siteSettings"][0] {  siteName,  tagline,  description,  logo {    asset->{ _id, url }  },  logoDark {    asset->{ _id, url }  },  favicon {    asset->{ _id, url }  },  mainNavigation[] {    _key,    label,    linkType,    externalUrl,    internalLink->{      _type,      "slug": slug.current    },    children[] {      _key,      label,      linkType,      externalUrl,      internalLink->{        _type,        "slug": slug.current      }    }  },  footerNavigation[] { label, url },  footerText,  socialLinks[] { platform, url },  orderingEnabled,  announcementBar {    enabled,    message,    link,    linkText,    backgroundColor  },  defaultSeo}
+// Query: *[  _type == "siteSettings"][0] {  siteName,  tagline,  description,  logo {    asset->{ _id, url }  },  logoDark {    asset->{ _id, url }  },  favicon {    asset->{ _id, url }  },  mainNavigation[] {    _key,    label,    linkType,    externalUrl,    internalLink->{      _type,      "slug": slug.current    },    children[] {      _key,      label,      linkType,      externalUrl,      internalLink->{        _type,        "slug": slug.current      }    }  },  footerNavigation[] { label, url },  footerText,  socialLinks[] { platform, url },  orderingEnabled,  announcementBar {    enabled,    message,    link,    linkText,    backgroundColor  },  defaultSeo}
 export type SITE_SETTINGS_QUERYResult = {
-  siteName: null;
-  tagline: null;
-  description: null;
-  logo: null;
-  logoDark: null;
-  favicon: null;
-  mainNavigation: null;
-  footerNavigation: null;
-  footerText: null;
-  socialLinks: null;
-  orderingEnabled: null;
-  announcementBar: null;
-  defaultSeo: null;
-} | {
-  siteName: null;
-  tagline: null;
-  description: PortableText | null;
-  logo: null;
-  logoDark: null;
-  favicon: null;
-  mainNavigation: null;
-  footerNavigation: null;
-  footerText: null;
-  socialLinks: null;
-  orderingEnabled: null;
-  announcementBar: null;
-  defaultSeo: null;
-} | {
-  siteName: null;
-  tagline: null;
-  description: string | null;
-  logo: null;
-  logoDark: null;
-  favicon: null;
-  mainNavigation: null;
-  footerNavigation: null;
-  footerText: null;
-  socialLinks: null;
-  orderingEnabled: null;
-  announcementBar: null;
-  defaultSeo: null;
-} | {
   siteName: string;
   tagline: string | null;
   description: string;
@@ -1510,7 +1468,7 @@ declare module "@sanity/client" {
     "*[\n  _type == \"blogPost\"\n] | order(publishedAt desc) {\n  _id,\n  title,\n  slug,\n  author,\n  publishedAt,\n  excerpt,\n  categories,\n  mainImage {\n    asset->{\n      _id,\n      url,\n      metadata { lqip, dimensions }\n    },\n    alt\n  }\n}": BLOG_POSTS_QUERYResult;
     "*[\n  _type == \"blogPost\"\n  && slug.current == $slug\n][0] {\n  _id,\n  title,\n  slug,\n  author,\n  publishedAt,\n  excerpt,\n  categories,\n  mainImage {\n    asset->{\n      _id,\n      url,\n      metadata { lqip, dimensions }\n    },\n    alt\n  },\n  body[] {\n    ...,\n    _type == \"image\" => {\n      asset->{ _id, url, metadata { lqip, dimensions } },\n      alt,\n      caption\n    },\n    _type == \"productEmbed\" => {\n      product->{\n        _id,\n        name,\n        slug,\n        price,\n        image {\n          asset->{ _id, url, metadata { lqip } },\n          alt\n        },\n        category->{ name, slug }\n      }\n    },\n    _type == \"storeEmbed\" => {\n      store->{\n        _id,\n        name,\n        slug,\n        city,\n        address,\n        image {\n          asset->{ _id, url, metadata { lqip } },\n          alt\n        }\n      }\n    },\n    _type == \"ctaButton\" => {\n      text,\n      url,\n      style\n    },\n    markDefs[] {\n      ...,\n      _type == \"link\" => {\n        href,\n        openInNewTab\n      }\n    }\n  },\n  relatedPosts[]->{\n    _id,\n    title,\n    slug,\n    publishedAt,\n    excerpt,\n    mainImage {\n      asset->{ _id, url, metadata { lqip } },\n      alt\n    }\n  },\n  seo\n}": BLOG_POST_BY_SLUG_QUERYResult;
     "*[\n  _type == \"page\"\n  && slug.current == $slug\n][0] {\n  _id,\n  title,\n  slug,\n  sections[] {\n    _type,\n    _key,\n    _type == \"heroSection\" => {\n      headline,\n      subheadline,\n      backgroundImage {\n        asset->{ _id, url, metadata { lqip, dimensions } },\n        alt,\n        hotspot,\n        crop\n      },\n      backgroundVideo,\n      ctaText,\n      ctaLink,\n      style\n    },\n    _type == \"textSection\" => {\n      heading,\n      body[] {\n        ...,\n        markDefs[] { ..., _type == \"link\" => { href, openInNewTab } },\n        _type == \"productEmbed\" => {\n          product->{ _id, name, slug, price, image { asset->{ _id, url }, alt } }\n        },\n        _type == \"storeEmbed\" => {\n          store->{ _id, name, slug, city, image { asset->{ _id, url }, alt } }\n        }\n      },\n      alignment\n    },\n    _type == \"featuredMenuSection\" => {\n      heading,\n      autoFeatured,\n      maxItems,\n      items[]->{\n        _id,\n        name,\n        slug,\n        price,\n        priceVariants[] { label, price },\n        image { asset->{ _id, url, metadata { lqip } }, alt },\n        category->{ name, slug, icon }\n      }\n    },\n    _type == \"storeListSection\" => {\n      heading,\n      showMap\n    },\n    _type == \"imageGallerySection\" => {\n      heading,\n      images[] {\n        asset->{ _id, url, metadata { lqip, dimensions } },\n        alt,\n        caption,\n        hotspot,\n        crop\n      },\n      layout\n    },\n    _type == \"ctaSection\" => {\n      heading,\n      body,\n      buttonText,\n      buttonLink,\n      backgroundImage {\n        asset->{ _id, url, metadata { lqip } },\n        hotspot,\n        crop\n      },\n      style\n    },\n    _type == \"testimonialSection\" => {\n      heading,\n      testimonials[] { quote, author, role }\n    },\n    _type == \"newsletterSection\" => {\n      heading,\n      description,\n      buttonText\n    }\n  },\n  seo\n}": PAGE_BY_SLUG_QUERYResult;
-    "*[\n  _id == \"siteSettings\"\n][0] {\n  siteName,\n  tagline,\n  description,\n  logo {\n    asset->{ _id, url }\n  },\n  logoDark {\n    asset->{ _id, url }\n  },\n  favicon {\n    asset->{ _id, url }\n  },\n  mainNavigation[] {\n    _key,\n    label,\n    linkType,\n    externalUrl,\n    internalLink->{\n      _type,\n      \"slug\": slug.current\n    },\n    children[] {\n      _key,\n      label,\n      linkType,\n      externalUrl,\n      internalLink->{\n        _type,\n        \"slug\": slug.current\n      }\n    }\n  },\n  footerNavigation[] { label, url },\n  footerText,\n  socialLinks[] { platform, url },\n  orderingEnabled,\n  announcementBar {\n    enabled,\n    message,\n    link,\n    linkText,\n    backgroundColor\n  },\n  defaultSeo\n}": SITE_SETTINGS_QUERYResult;
+    "*[\n  _type == \"siteSettings\"\n][0] {\n  siteName,\n  tagline,\n  description,\n  logo {\n    asset->{ _id, url }\n  },\n  logoDark {\n    asset->{ _id, url }\n  },\n  favicon {\n    asset->{ _id, url }\n  },\n  mainNavigation[] {\n    _key,\n    label,\n    linkType,\n    externalUrl,\n    internalLink->{\n      _type,\n      \"slug\": slug.current\n    },\n    children[] {\n      _key,\n      label,\n      linkType,\n      externalUrl,\n      internalLink->{\n        _type,\n        \"slug\": slug.current\n      }\n    }\n  },\n  footerNavigation[] { label, url },\n  footerText,\n  socialLinks[] { platform, url },\n  orderingEnabled,\n  announcementBar {\n    enabled,\n    message,\n    link,\n    linkText,\n    backgroundColor\n  },\n  defaultSeo\n}": SITE_SETTINGS_QUERYResult;
     "*[\n  _type == \"promotion\"\n  && active == true\n  && surfaces.website == true\n  && (startDate == null || startDate <= now())\n  && (endDate == null || endDate >= now())\n] {\n  _id,\n  headline,\n  description,\n  image {\n    asset->{ _id, url, metadata { lqip, dimensions } },\n    alt\n  },\n  products[]->{\n    _id,\n    name,\n    slug,\n    price,\n    image { asset->{ _id, url }, alt }\n  },\n  stores[]->{\n    _id,\n    name,\n    city\n  }\n}": ACTIVE_PROMOTIONS_QUERYResult;
   }
 }

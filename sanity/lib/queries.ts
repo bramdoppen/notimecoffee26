@@ -431,7 +431,7 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(`*[
 
 /** Global site settings — nav, footer, branding, announcement bar (singleton) */
 export const SITE_SETTINGS_QUERY = defineQuery(`*[
-  _id == "siteSettings"
+  _type == "siteSettings"
 ][0] {
   siteName,
   tagline,
