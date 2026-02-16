@@ -25,8 +25,9 @@ export default async function SiteLayout({
     <>
       {announcement?.enabled && (
         <AnnouncementBar
-          text={announcement.text}
+          message={announcement.message}
           link={announcement.link}
+          linkText={announcement.linkText}
           backgroundColor={announcement.backgroundColor}
         />
       )}
