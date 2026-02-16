@@ -26,20 +26,16 @@ function resolveHref(
   switch (documentType) {
     case 'page':
       return slug === 'home' ? '/' : slug ? `/${slug}` : undefined;
-    case 'blogPost':
-      return slug ? `/blog/${slug}` : undefined;
-    case 'product':
-      return slug ? `/menu/${slug}` : undefined;
-    case 'store':
-      return slug ? `/locations/${slug}` : undefined;
+    case 'property':
+      return slug ? `/woningen/${slug}` : undefined;
     default:
       return undefined;
   }
 }
 
 export default defineConfig({
-  name: 'notimecoffee',
-  title: 'No Time Coffee',
+  name: 'aankoopmakelaar',
+  title: 'Aankoopmakelaar',
   projectId,
   dataset,
   plugins: [
@@ -62,22 +58,14 @@ export default defineConfig({
             filter: `_type == "page" && slug.current == $slug`,
           },
           {
-            route: '/blog/:slug',
-            filter: `_type == "blogPost" && slug.current == $slug`,
-          },
-          {
-            route: '/menu/:slug',
-            filter: `_type == "product" && slug.current == $slug`,
-          },
-          {
-            route: '/locations/:slug',
-            filter: `_type == "store" && slug.current == $slug`,
+            route: '/woningen/:slug',
+            filter: `_type == "property" && slug.current == $slug`,
           },
         ]),
         locations: {
           siteSettings: defineLocations({
             locations: [homeLocation],
-            message: 'This document is used on all pages',
+            message: 'Dit document wordt op alle pagina\'s gebruikt',
             tone: 'positive',
           }),
           page: defineLocations({
@@ -91,38 +79,16 @@ export default defineConfig({
               ],
             }),
           }),
-          blogPost: defineLocations({
-            select: { title: 'title', slug: 'slug.current' },
+          property: defineLocations({
+            select: { title: 'address', slug: 'slug.current' },
             resolve: (doc) => ({
               locations: [
                 {
-                  title: doc?.title || 'Untitled',
-                  href: resolveHref('blogPost', doc?.slug)!,
+                  title: doc?.title || 'Woning',
+                  href: resolveHref('property', doc?.slug)!,
                 },
                 homeLocation,
               ].filter(Boolean) as DocumentLocation[],
-            }),
-          }),
-          product: defineLocations({
-            select: { title: 'name', slug: 'slug.current' },
-            resolve: (doc) => ({
-              locations: [
-                {
-                  title: doc?.title || 'Untitled',
-                  href: resolveHref('product', doc?.slug)!,
-                },
-              ],
-            }),
-          }),
-          store: defineLocations({
-            select: { title: 'name', slug: 'slug.current' },
-            resolve: (doc) => ({
-              locations: [
-                {
-                  title: doc?.title || 'Untitled',
-                  href: resolveHref('store', doc?.slug)!,
-                },
-              ],
             }),
           }),
         },

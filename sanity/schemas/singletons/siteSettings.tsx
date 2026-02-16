@@ -1,29 +1,28 @@
-import {CogIcon} from '@sanity/icons'
-import {defineArrayMember, defineField, defineType} from 'sanity'
+import { CogIcon } from '@sanity/icons';
+import { defineField, defineType } from 'sanity';
 
 /**
  * Site Settings — global brand and site configuration (singleton).
- * Only one instance, enforced in Studio structure.
+ * Adapted for aankoopmakelaar (property buying agent) app.
  */
 export const siteSettings = defineType({
   name: 'siteSettings',
-  title: 'Site Settings',
+  title: 'Site Instellingen',
   type: 'document',
   icon: CogIcon,
   groups: [
-    {name: 'brand', title: 'Brand', default: true},
-    {name: 'navigation', title: 'Navigation'},
-    {name: 'footer', title: 'Footer'},
-    {name: 'features', title: 'Features'},
-    {name: 'seo', title: 'SEO'},
+    { name: 'brand', title: 'Merk', default: true },
+    { name: 'navigation', title: 'Navigatie' },
+    { name: 'footer', title: 'Footer' },
+    { name: 'features', title: 'Features' },
+    { name: 'seo', title: 'SEO' },
   ],
   fields: [
     // --- Brand ---
     defineField({
       name: 'siteName',
-      title: 'Site Name',
+      title: 'Site Naam',
       type: 'string',
-      initialValue: 'NOTIME coffee',
       validation: (rule) => rule.required(),
       group: 'brand',
     }),
@@ -35,10 +34,10 @@ export const siteSettings = defineType({
     }),
     defineField({
       name: 'description',
-      title: 'Site Description',
+      title: 'Site Beschrijving',
       type: 'text',
       rows: 3,
-      description: 'Default meta description used when pages don\'t have their own',
+      description: 'Default meta description',
       validation: (rule) => rule.required(),
       group: 'brand',
     }),
@@ -46,15 +45,12 @@ export const siteSettings = defineType({
       name: 'logo',
       title: 'Logo',
       type: 'image',
-      description: 'Primary logo (light backgrounds)',
-      validation: (rule) => rule.required(),
       group: 'brand',
     }),
     defineField({
       name: 'logoDark',
-      title: 'Logo (Dark Variant)',
+      title: 'Logo (Donker)',
       type: 'image',
-      description: 'Logo for dark backgrounds',
       group: 'brand',
     }),
     defineField({
@@ -77,12 +73,11 @@ export const siteSettings = defineType({
               type: 'string',
               options: {
                 list: [
-                  {title: 'Instagram', value: 'instagram'},
-                  {title: 'Facebook', value: 'facebook'},
-                  {title: 'TikTok', value: 'tiktok'},
-                  {title: 'X (Twitter)', value: 'twitter'},
-                  {title: 'LinkedIn', value: 'linkedin'},
-                  {title: 'YouTube', value: 'youtube'},
+                  { title: 'Instagram', value: 'instagram' },
+                  { title: 'Facebook', value: 'facebook' },
+                  { title: 'LinkedIn', value: 'linkedin' },
+                  { title: 'X (Twitter)', value: 'twitter' },
+                  { title: 'YouTube', value: 'youtube' },
                 ],
               },
               validation: (rule) => rule.required(),
@@ -95,7 +90,7 @@ export const siteSettings = defineType({
             }),
           ],
           preview: {
-            select: {title: 'platform', subtitle: 'url'},
+            select: { title: 'platform', subtitle: 'url' },
           },
         },
       ],
@@ -105,7 +100,7 @@ export const siteSettings = defineType({
     // --- Navigation ---
     defineField({
       name: 'mainNavigation',
-      title: 'Main Navigation',
+      title: 'Hoofdnavigatie',
       type: 'array',
       of: [
         {
@@ -124,8 +119,8 @@ export const siteSettings = defineType({
               type: 'string',
               options: {
                 list: [
-                  {title: 'Internal Page', value: 'internal'},
-                  {title: 'External URL', value: 'external'},
+                  { title: 'Interne pagina', value: 'internal' },
+                  { title: 'Externe URL', value: 'external' },
                 ],
                 layout: 'radio',
               },
@@ -133,77 +128,20 @@ export const siteSettings = defineType({
             }),
             defineField({
               name: 'internalLink',
-              title: 'Internal Page',
+              title: 'Interne Pagina',
               type: 'reference',
-              to: [{type: 'page'}, {type: 'blogPost'}],
-              hidden: ({parent}) => parent?.linkType !== 'internal',
+              to: [{ type: 'page' }],
+              hidden: ({ parent }) => parent?.linkType !== 'internal',
             }),
             defineField({
               name: 'externalUrl',
-              title: 'External URL',
+              title: 'Externe URL',
               type: 'url',
-              hidden: ({parent}) => parent?.linkType !== 'external',
-            }),
-            defineField({
-              name: 'children',
-              title: 'Dropdown Items',
-              type: 'array',
-              of: [
-                {
-                  type: 'object',
-                  fields: [
-                    defineField({
-                      name: 'label',
-                      title: 'Label',
-                      type: 'string',
-                      validation: (rule) => rule.required(),
-                    }),
-                    defineField({
-                      name: 'linkType',
-                      title: 'Link Type',
-                      type: 'string',
-                      options: {
-                        list: [
-                          {title: 'Internal Page', value: 'internal'},
-                          {title: 'External URL', value: 'external'},
-                        ],
-                        layout: 'radio',
-                      },
-                      initialValue: 'internal',
-                    }),
-                    defineField({
-                      name: 'internalLink',
-                      title: 'Internal Page',
-                      type: 'reference',
-                      to: [{type: 'page'}, {type: 'blogPost'}],
-                      hidden: ({parent}) => parent?.linkType !== 'internal',
-                    }),
-                    defineField({
-                      name: 'externalUrl',
-                      title: 'External URL',
-                      type: 'url',
-                      hidden: ({parent}) => parent?.linkType !== 'external',
-                    }),
-                  ],
-                  preview: {
-                    select: {title: 'label'},
-                  },
-                },
-              ],
+              hidden: ({ parent }) => parent?.linkType !== 'external',
             }),
           ],
           preview: {
-            select: {
-              title: 'label',
-              children: 'children',
-            },
-            prepare({title, children}) {
-              const count = children?.length || 0
-              return {
-                title: title || 'Nav Item',
-                subtitle: count > 0 ? `${count} dropdown items` : 'Link',
-              }
-            },
+            select: { title: 'label' },
           },
         },
       ],
@@ -213,7 +151,7 @@ export const siteSettings = defineType({
     // --- Footer ---
     defineField({
       name: 'footerNavigation',
-      title: 'Footer Navigation',
+      title: 'Footer Navigatie',
       type: 'array',
       of: [
         {
@@ -230,11 +168,11 @@ export const siteSettings = defineType({
               title: 'URL',
               type: 'url',
               validation: (rule) =>
-                rule.uri({allowRelative: true, scheme: ['http', 'https']}),
+                rule.uri({ allowRelative: true, scheme: ['http', 'https'] }),
             }),
           ],
           preview: {
-            select: {title: 'label', subtitle: 'url'},
+            select: { title: 'label', subtitle: 'url' },
           },
         },
       ],
@@ -242,60 +180,60 @@ export const siteSettings = defineType({
     }),
     defineField({
       name: 'footerText',
-      title: 'Footer Text',
+      title: 'Footer Tekst',
       type: 'text',
       rows: 2,
-      description: 'Copyright or legal text displayed in the footer',
       group: 'footer',
     }),
 
     // --- Features ---
     defineField({
-      name: 'orderingEnabled',
-      title: 'Online Ordering Enabled',
+      name: 'scoringEnabled',
+      title: 'Scoring Model Actief',
       type: 'boolean',
-      description: 'Phase 2 toggle — enables order terminal features on the website',
+      description: 'Schakel het AI scoring model in/uit op de site',
+      initialValue: false,
+      group: 'features',
+    }),
+    defineField({
+      name: 'fundaScrapingEnabled',
+      title: 'Funda Scraping Actief',
+      type: 'boolean',
+      description: 'Schakel automatische Funda imports in/uit',
       initialValue: false,
       group: 'features',
     }),
     defineField({
       name: 'announcementBar',
-      title: 'Announcement Bar',
+      title: 'Aankondigingsbalk',
       type: 'object',
       group: 'features',
       fields: [
         defineField({
           name: 'enabled',
-          title: 'Enabled',
+          title: 'Actief',
           type: 'boolean',
           initialValue: false,
         }),
         defineField({
           name: 'message',
-          title: 'Message',
+          title: 'Bericht',
           type: 'string',
-          hidden: ({parent}) => !parent?.enabled,
+          hidden: ({ parent }) => !parent?.enabled,
         }),
         defineField({
           name: 'link',
           title: 'Link URL',
           type: 'url',
           validation: (rule) =>
-            rule.uri({allowRelative: true, scheme: ['http', 'https']}),
-          hidden: ({parent}) => !parent?.enabled,
+            rule.uri({ allowRelative: true, scheme: ['http', 'https'] }),
+          hidden: ({ parent }) => !parent?.enabled,
         }),
         defineField({
           name: 'linkText',
-          title: 'Link Text',
+          title: 'Link Tekst',
           type: 'string',
-          hidden: ({parent}) => !parent?.enabled,
-        }),
-        defineField({
-          name: 'backgroundColor',
-          title: 'Background Color',
-          type: 'string',
-          description: 'Hex color (e.g., #2D5016)',
-          hidden: ({parent}) => !parent?.enabled,
+          hidden: ({ parent }) => !parent?.enabled,
         }),
       ],
       options: {
@@ -309,15 +247,15 @@ export const siteSettings = defineType({
       name: 'defaultSeo',
       title: 'Default SEO',
       type: 'seoFields',
-      description: 'Fallback SEO settings used when pages don\'t have their own',
+      description: 'Fallback SEO instellingen',
       group: 'seo',
     }),
   ],
   preview: {
     prepare() {
       return {
-        title: '⚙️ Site Settings',
-      }
+        title: '⚙️ Site Instellingen',
+      };
     },
   },
-})
+});

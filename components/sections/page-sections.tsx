@@ -1,7 +1,5 @@
 import { HeroSection } from "./hero-section";
 import { TextSection } from "./text-section";
-import { FeaturedMenuSection } from "./featured-menu-section";
-import { StoreListSection } from "./store-list-section";
 import { ImageGallerySection } from "./image-gallery-section";
 import { CtaSection } from "./cta-section";
 import { TestimonialSection } from "./testimonial-section";
@@ -20,8 +18,6 @@ type PageSectionsProps = {
 const sectionMap: Record<string, React.ComponentType<any>> = {
   heroSection: HeroSection,
   textSection: TextSection,
-  featuredMenuSection: FeaturedMenuSection,
-  storeListSection: StoreListSection,
   imageGallerySection: ImageGallerySection,
   ctaSection: CtaSection,
   testimonialSection: TestimonialSection,
@@ -46,7 +42,6 @@ function PageSections({ sections }: PageSectionsProps) {
           return null;
         }
 
-        // Spread section props, excluding internal fields
         const { _type, _key, ...props } = section;
         return <Component key={_key} {...props} />;
       })}

@@ -1,5 +1,5 @@
 /**
- * All GROQ queries for notimecoffee.
+ * All GROQ queries for aankoopmakelaar.
  *
  * Conventions:
  * - SCREAMING_SNAKE_CASE names
@@ -7,332 +7,284 @@
  * - Explicit projections (no ... spread)
  * - Parameters for variables (never string interpolation)
  * - One query per export
- *
- * Owner: @grind
- * Consumers: @roast (pages)
- * Schema source: @bean's content model
  */
 
 import { defineQuery } from 'next-sanity';
 
 // ---------------------------------------------------------------------------
-// Products
+// Properties
 // ---------------------------------------------------------------------------
 
-/** All website products — flat list, frontend handles grouping/filtering */
-export const PRODUCTS_QUERY = defineQuery(`*[
-  _type == "product"
-  && available == true
-  && surfaces.website == true
-] | order(sortOrder asc, name asc) {
+/** All available properties — listing view */
+export const PROPERTIES_QUERY = defineQuery(`*[
+  _type == "property"
+  && listingStatus == "beschikbaar"
+] | order(listingDate desc) {
   _id,
-  name,
-  slug,
-  description,
-  price,
-  priceVariants[] { label, price },
-  image {
-    asset->{
-      _id,
-      url,
-      metadata { lqip, dimensions }
-    },
-    alt,
-    hotspot,
-    crop
-  },
-  allergens,
-  dietaryFlags,
-  featured,
-  category->{
-    _id,
-    name,
-    slug,
-    icon,
-    sortOrder
-  },
-  availableAt[]->{
-    _id,
-    name,
-    city
-  }
-}`);
-
-/** Single product by slug */
-export const PRODUCT_BY_SLUG_QUERY = defineQuery(`*[
-  _type == "product"
-  && slug.current == $slug
-  && surfaces.website == true
-][0] {
-  _id,
-  name,
-  slug,
-  description,
-  price,
-  priceVariants[] { label, price },
-  image {
-    asset->{
-      _id,
-      url,
-      metadata { lqip, dimensions }
-    },
-    alt,
-    hotspot,
-    crop
-  },
-  gallery[] {
-    asset->{
-      _id,
-      url,
-      metadata { lqip, dimensions }
-    },
-    alt
-  },
-  allergens,
-  dietaryFlags,
-  category->{
-    _id,
-    name,
-    slug,
-    icon
-  },
-  availableAt[]->{
-    _id,
-    name,
-    city
-  },
-  seo
-}`);
-
-/** Featured products for landing page / featuredMenuSection (autoFeatured mode) */
-export const FEATURED_PRODUCTS_QUERY = defineQuery(`*[
-  _type == "product"
-  && available == true
-  && featured == true
-  && surfaces.website == true
-] | order(sortOrder asc) [0...$limit] {
-  _id,
-  name,
-  slug,
-  description,
-  price,
-  priceVariants[] { label, price },
-  image {
-    asset->{
-      _id,
-      url,
-      metadata { lqip, dimensions }
-    },
-    alt,
-    hotspot,
-    crop
-  },
-  category->{
-    _id,
-    name,
-    slug,
-    icon
-  }
-}`);
-
-// ---------------------------------------------------------------------------
-// Product Categories
-// ---------------------------------------------------------------------------
-
-/** All website product categories */
-export const PRODUCT_CATEGORIES_QUERY = defineQuery(`*[
-  _type == "productCategory"
-  && surfaces.website == true
-] | order(sortOrder asc) {
-  _id,
-  name,
-  slug,
-  icon,
-  sortOrder,
-  image {
-    asset->{ _id, url, metadata { lqip } },
-    alt
-  },
-  description
-}`);
-
-// ---------------------------------------------------------------------------
-// Stores
-// ---------------------------------------------------------------------------
-
-/** All stores (no surface filter — stores are always public) */
-export const STORES_QUERY = defineQuery(`*[
-  _type == "store"
-] | order(name asc) {
-  _id,
-  name,
-  slug,
-  city,
   address,
-  zipCode,
-  coordinates,
-  phone,
-  email,
-  hours[] { day, open, close, closed },
-  features,
-  image {
-    asset->{
-      _id,
-      url,
-      metadata { lqip, dimensions }
-    },
-    alt,
-    hotspot,
-    crop
-  }
-}`);
-
-/** Single store by slug — includes gallery, specialHours, description */
-export const STORE_BY_SLUG_QUERY = defineQuery(`*[
-  _type == "store"
-  && slug.current == $slug
-][0] {
-  _id,
-  name,
   slug,
+  zipCode,
   city,
-  address,
-  zipCode,
-  coordinates,
-  phone,
-  email,
-  hours[] { day, open, close, closed },
-  specialHours[] { date, label, open, close, closed },
+  propertyType,
+  askingPrice,
+  livingArea,
+  plotArea,
+  rooms,
+  bedrooms,
+  bathrooms,
+  buildYear,
+  energyLabel,
   features,
-  image {
-    asset->{
-      _id,
-      url,
-      metadata { lqip, dimensions }
-    },
-    alt,
-    hotspot,
-    crop
-  },
-  gallery[] {
-    asset->{ _id, url, metadata { lqip, dimensions } },
-    alt,
-    caption
-  },
-  description,
-  seo
-}`);
-
-// ---------------------------------------------------------------------------
-// Blog Posts
-// ---------------------------------------------------------------------------
-
-/** All blog posts — listing view */
-export const BLOG_POSTS_QUERY = defineQuery(`*[
-  _type == "blogPost"
-] | order(publishedAt desc) {
-  _id,
-  title,
-  slug,
-  author,
-  publishedAt,
-  excerpt,
-  categories,
+  listingStatus,
+  listingDate,
+  daysOnMarket,
+  starred,
   mainImage {
     asset->{
       _id,
       url,
       metadata { lqip, dimensions }
     },
-    alt
+    alt,
+    hotspot,
+    crop
+  },
+  neighborhood->{
+    _id,
+    name,
+    city
   }
 }`);
 
-/** Single blog post by slug — full content with portable text embeds resolved */
-export const BLOG_POST_BY_SLUG_QUERY = defineQuery(`*[
-  _type == "blogPost"
-  && slug.current == $slug
-][0] {
+/** All properties (any status) — for admin/overview */
+export const ALL_PROPERTIES_QUERY = defineQuery(`*[
+  _type == "property"
+] | order(listingDate desc) {
   _id,
-  title,
+  address,
   slug,
-  author,
-  publishedAt,
-  excerpt,
-  categories,
+  zipCode,
+  city,
+  propertyType,
+  askingPrice,
+  livingArea,
+  rooms,
+  bedrooms,
+  listingStatus,
+  starred,
+  listingDate,
   mainImage {
     asset->{
       _id,
       url,
       metadata { lqip, dimensions }
     },
-    alt
-  },
-  body[] {
-    ...,
-    _type == "image" => {
-      asset->{ _id, url, metadata { lqip, dimensions } },
-      alt,
-      caption
-    },
-    _type == "productEmbed" => {
-      product->{
-        _id,
-        name,
-        slug,
-        price,
-        image {
-          asset->{ _id, url, metadata { lqip } },
-          alt
-        },
-        category->{ name, slug }
-      }
-    },
-    _type == "storeEmbed" => {
-      store->{
-        _id,
-        name,
-        slug,
-        city,
-        address,
-        image {
-          asset->{ _id, url, metadata { lqip } },
-          alt
-        }
-      }
-    },
-    _type == "ctaButton" => {
-      text,
+    alt,
+    hotspot,
+    crop
+  }
+}`);
+
+/** Starred/favorite properties */
+export const STARRED_PROPERTIES_QUERY = defineQuery(`*[
+  _type == "property"
+  && starred == true
+] | order(listingDate desc) {
+  _id,
+  address,
+  slug,
+  zipCode,
+  city,
+  propertyType,
+  askingPrice,
+  livingArea,
+  rooms,
+  bedrooms,
+  listingStatus,
+  starred,
+  listingDate,
+  mainImage {
+    asset->{
+      _id,
       url,
-      style
+      metadata { lqip, dimensions }
     },
-    markDefs[] {
-      ...,
-      _type == "link" => {
-        href,
-        openInNewTab
-      }
-    }
+    alt,
+    hotspot,
+    crop
   },
-  relatedPosts[]->{
+  neighborhood->{
     _id,
-    title,
-    slug,
-    publishedAt,
-    excerpt,
-    mainImage {
-      asset->{ _id, url, metadata { lqip } },
-      alt
-    }
+    name,
+    city
+  }
+}`);
+
+/** Single property by slug — full detail view */
+export const PROPERTY_BY_SLUG_QUERY = defineQuery(`*[
+  _type == "property"
+  && slug.current == $slug
+][0] {
+  _id,
+  address,
+  slug,
+  zipCode,
+  city,
+  propertyType,
+  askingPrice,
+  livingArea,
+  plotArea,
+  rooms,
+  bedrooms,
+  bathrooms,
+  buildYear,
+  energyLabel,
+  features,
+  description,
+  coordinates,
+  pricePerSqm,
+  serviceCharges,
+  ownershipType,
+  erfpachtDetails,
+  mainImage {
+    asset->{
+      _id,
+      url,
+      metadata { lqip, dimensions }
+    },
+    alt,
+    hotspot,
+    crop
   },
-  seo
+  photos[] {
+    asset->{
+      _id,
+      url,
+      metadata { lqip, dimensions }
+    },
+    alt,
+    category
+  },
+  floorPlanUrl,
+  fundaUrl,
+  fundaId,
+  sourceType,
+  scrapedAt,
+  listingStatus,
+  listingDate,
+  daysOnMarket,
+  starred,
+  notes,
+  neighborhood->{
+    _id,
+    name,
+    slug,
+    city,
+    description,
+    averagePricePerSqm,
+    amenities,
+    safetyRating
+  }
+}`);
+
+/** Property by fundaId — used for deduplication during import */
+export const PROPERTY_BY_FUNDA_ID_QUERY = defineQuery(`*[
+  _type == "property"
+  && fundaId == $fundaId
+][0] {
+  _id,
+  fundaId,
+  scrapedAt,
+  listingStatus
 }`);
 
 // ---------------------------------------------------------------------------
-// Pages (Section Builder)
+// Search Profiles
 // ---------------------------------------------------------------------------
 
-/** Page by slug — resolves all section types with their data */
+/** All active search profiles */
+export const ACTIVE_SEARCH_PROFILES_QUERY = defineQuery(`*[
+  _type == "searchProfile"
+  && active == true
+] {
+  _id,
+  name,
+  slug,
+  cities,
+  minPrice,
+  maxPrice,
+  maxTotalCost,
+  propertyTypes,
+  minLivingArea,
+  minRooms,
+  minBedrooms,
+  mustHaveFeatures,
+  preferredEnergyLabels,
+  maxBuildYear,
+  niceToHaveFeatures,
+  notes,
+  neighborhoods[]->{
+    _id,
+    name,
+    city
+  }
+}`);
+
+/** Single search profile by slug */
+export const SEARCH_PROFILE_BY_SLUG_QUERY = defineQuery(`*[
+  _type == "searchProfile"
+  && slug.current == $slug
+][0] {
+  _id,
+  name,
+  slug,
+  active,
+  cities,
+  minPrice,
+  maxPrice,
+  maxTotalCost,
+  propertyTypes,
+  minLivingArea,
+  minRooms,
+  minBedrooms,
+  mustHaveFeatures,
+  preferredEnergyLabels,
+  maxBuildYear,
+  niceToHaveFeatures,
+  notes,
+  neighborhoods[]->{
+    _id,
+    name,
+    slug,
+    city,
+    averagePricePerSqm
+  }
+}`);
+
+// ---------------------------------------------------------------------------
+// Neighborhoods
+// ---------------------------------------------------------------------------
+
+/** All neighborhoods */
+export const NEIGHBORHOODS_QUERY = defineQuery(`*[
+  _type == "neighborhood"
+] | order(city asc, name asc) {
+  _id,
+  name,
+  slug,
+  city,
+  description,
+  averagePricePerSqm,
+  amenities,
+  safetyRating,
+  coordinates
+}`);
+
+// ---------------------------------------------------------------------------
+// Pages (Section Builder — kept from template)
+// ---------------------------------------------------------------------------
+
+/** Page by slug — resolves all section types */
 export const PAGE_BY_SLUG_QUERY = defineQuery(`*[
   _type == "page"
   && slug.current == $slug
@@ -361,33 +313,9 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(`*[
       heading,
       body[] {
         ...,
-        markDefs[] { ..., _type == "link" => { href, openInNewTab } },
-        _type == "productEmbed" => {
-          product->{ _id, name, slug, price, image { asset->{ _id, url }, alt } }
-        },
-        _type == "storeEmbed" => {
-          store->{ _id, name, slug, city, image { asset->{ _id, url }, alt } }
-        }
+        markDefs[] { ..., _type == "link" => { href, openInNewTab } }
       },
       alignment
-    },
-    _type == "featuredMenuSection" => {
-      heading,
-      autoFeatured,
-      maxItems,
-      items[]->{
-        _id,
-        name,
-        slug,
-        price,
-        priceVariants[] { label, price },
-        image { asset->{ _id, url, metadata { lqip } }, alt },
-        category->{ name, slug, icon }
-      }
-    },
-    _type == "storeListSection" => {
-      heading,
-      showMap
     },
     _type == "imageGallerySection" => {
       heading,
@@ -429,7 +357,7 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(`*[
 // Site Settings (Singleton)
 // ---------------------------------------------------------------------------
 
-/** Global site settings — nav, footer, branding, announcement bar (singleton) */
+/** Global site settings */
 export const SITE_SETTINGS_QUERY = defineQuery(`*[
   _id == "siteSettings"
 ][0] {
@@ -453,61 +381,18 @@ export const SITE_SETTINGS_QUERY = defineQuery(`*[
     internalLink->{
       _type,
       "slug": slug.current
-    },
-    children[] {
-      _key,
-      label,
-      linkType,
-      externalUrl,
-      internalLink->{
-        _type,
-        "slug": slug.current
-      }
     }
   },
   footerNavigation[] { label, url },
   footerText,
   socialLinks[] { platform, url },
-  orderingEnabled,
+  scoringEnabled,
+  fundaScrapingEnabled,
   announcementBar {
     enabled,
     message,
     link,
-    linkText,
-    backgroundColor
+    linkText
   },
   defaultSeo
-}`);
-
-// ---------------------------------------------------------------------------
-// Promotions (Future-ready)
-// ---------------------------------------------------------------------------
-
-/** Active promotions for website — date-filtered */
-export const ACTIVE_PROMOTIONS_QUERY = defineQuery(`*[
-  _type == "promotion"
-  && active == true
-  && surfaces.website == true
-  && (startDate == null || startDate <= now())
-  && (endDate == null || endDate >= now())
-] {
-  _id,
-  headline,
-  description,
-  image {
-    asset->{ _id, url, metadata { lqip, dimensions } },
-    alt
-  },
-  products[]->{
-    _id,
-    name,
-    slug,
-    price,
-    image { asset->{ _id, url }, alt }
-  },
-  stores[]->{
-    _id,
-    name,
-    city
-  }
 }`);

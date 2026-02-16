@@ -38,8 +38,6 @@ export const page = defineType({
       of: [
         {type: 'heroSection'},
         {type: 'textSection'},
-        {type: 'featuredMenuSection'},
-        {type: 'storeListSection'},
         {type: 'imageGallerySection'},
         {type: 'ctaSection'},
         {type: 'testimonialSection'},

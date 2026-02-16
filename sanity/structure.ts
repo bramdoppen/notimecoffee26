@@ -1,72 +1,83 @@
-import { CogIcon, PackageIcon, TagIcon, PinIcon } from '@sanity/icons';
+import {
+  CogIcon,
+  HomeIcon,
+  PinIcon,
+  SearchIcon,
+} from '@sanity/icons';
 import type { StructureBuilder, StructureResolver } from 'sanity/structure';
 
 // Types handled by custom structure or hidden from the default list
 const HIDDEN_TYPES = [
   'siteSettings',
-  'product',
-  'productCategory',
+  'property',
+  'neighborhood',
+  'searchProfile',
   'assist.instruction.context',
 ];
 
-const productStructure = (S: StructureBuilder) =>
+const propertyStructure = (S: StructureBuilder) =>
   S.listItem()
-    .title('Products')
-    .icon(PackageIcon)
+    .title('Woningen')
+    .icon(HomeIcon)
     .child(
       S.list()
-        .title('Product Views')
+        .title('Woningen')
         .items([
           S.listItem()
-            .title('Products by Category')
-            .icon(TagIcon)
+            .title('Beschikbaar')
             .child(
-              S.documentTypeList('productCategory')
-                .title('Categories')
-                .child((categoryId) =>
-                  S.documentList()
-                    .title('Products')
-                    .filter(
-                      '_type == "product" && category._ref == $categoryId'
-                    )
-                    .params({ categoryId })
+              S.documentList()
+                .title('Beschikbare woningen')
+                .filter(
+                  '_type == "property" && listingStatus == "beschikbaar"'
                 )
             ),
           S.listItem()
-            .title('Products by Store')
-            .icon(PinIcon)
+            .title('Favorieten ⭐')
             .child(
-              S.documentTypeList('store')
-                .title('Stores')
-                .child((storeId) =>
-                  S.documentList()
-                    .title('Products')
-                    .filter(
-                      '_type == "product" && $storeId in availableAt[]._ref'
-                    )
-                    .params({ storeId })
-                )
+              S.documentList()
+                .title('Favoriete woningen')
+                .filter('_type == "property" && starred == true')
             ),
           S.listItem()
-            .title('All Products')
-            .icon(PackageIcon)
-            .child(S.documentTypeList('product').title('All Products')),
+            .title('Onder bod / Verkocht')
+            .child(
+              S.documentList()
+                .title('Onder bod / Verkocht')
+                .filter(
+                  '_type == "property" && listingStatus in ["onder_bod", "verkocht_onder_voorbehoud", "verkocht"]'
+                )
+            ),
+          S.divider(),
+          S.listItem()
+            .title('Alle woningen')
+            .icon(HomeIcon)
+            .child(S.documentTypeList('property').title('Alle woningen')),
         ])
     );
 
 export const structure: StructureResolver = (S) =>
   S.list()
-    .title('Content')
+    .title('Aankoopmakelaar')
     .items([
-      // Products (custom nested structure)
-      productStructure(S),
+      // Properties (custom nested structure)
+      propertyStructure(S),
 
-      // Product Categories
-      S.documentTypeListItem('productCategory').title('Product Categories'),
+      // Search Profiles
+      S.listItem()
+        .title('Zoekprofielen')
+        .icon(SearchIcon)
+        .child(S.documentTypeList('searchProfile').title('Zoekprofielen')),
+
+      // Neighborhoods
+      S.listItem()
+        .title('Buurten')
+        .icon(PinIcon)
+        .child(S.documentTypeList('neighborhood').title('Buurten')),
 
       S.divider(),
 
-      // Remaining document types (pages, blog posts, stores, promotions, persons)
+      // Remaining document types (pages, etc.)
       ...S.documentTypeListItems().filter(
         (listItem: any) => !HIDDEN_TYPES.includes(listItem.getId())
       ),
@@ -75,7 +86,7 @@ export const structure: StructureResolver = (S) =>
 
       // Settings Singleton
       S.listItem()
-        .title('Site Settings')
+        .title('Site Instellingen')
         .child(
           S.document().schemaType('siteSettings').documentId('siteSettings')
         )
