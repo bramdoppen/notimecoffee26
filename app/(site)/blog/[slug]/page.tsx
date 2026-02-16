@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { sanityFetch } from "@/sanity/lib/fetch";
-import { POST_BY_SLUG_QUERY } from "@/sanity/lib/queries";
+import { BLOG_POST_BY_SLUG_QUERY } from "@/sanity/lib/queries";
 import { PortableTextRenderer } from "@/components/sanity/portable-text";
 import { urlFor } from "@/sanity/lib/image";
 import Image from "next/image";
@@ -16,7 +16,7 @@ export async function generateMetadata({
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await sanityFetch<any>({
-    query: POST_BY_SLUG_QUERY,
+    query: BLOG_POST_BY_SLUG_QUERY,
     params: { slug },
     tags: ["blogPost"],
   });
@@ -45,7 +45,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
 
   const post = await sanityFetch<any>({
-    query: POST_BY_SLUG_QUERY,
+    query: BLOG_POST_BY_SLUG_QUERY,
     params: { slug },
     tags: ["blogPost"],
   });
